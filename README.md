@@ -15,6 +15,10 @@ Open:
 
 Live API calls require internet access. The static shell and deterministic tests do not.
 
+## Deployment
+
+Production is deployed from the `main` branch through the connected Vercel Git integration. This repository intentionally uses a zero-build static + Vercel Functions architecture; do not add a framework or custom build command unless the deployment model is intentionally changed.
+
 ## Canonical production route
 `https://chrisizworski.com/national-tools/monarch-migration-live`
 
