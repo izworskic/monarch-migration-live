@@ -2,6 +2,13 @@
   "cleanUrls": false,
   "trailingSlash": false,
   "outputDirectory": "public",
+  "functions": {
+    "api/context.js": { "maxDuration": 20 },
+    "api/history.js": { "maxDuration": 20 },
+    "api/sightings.js": { "maxDuration": 15 },
+    "api/geocode.js": { "maxDuration": 10 },
+    "api/status.js": { "maxDuration": 10 }
+  },
   "rewrites": [
     { "source": "/", "destination": "/index.html" },
     { "source": "/national-tools/monarch-migration-live", "destination": "/index.html" },
