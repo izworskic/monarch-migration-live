@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Monarch Migration Live | Real-Time Monarch Butterfly Migration Map & Timing</title>
+  <meta name="description" content="Track monarch butterfly migration with recent licensed sightings, local migration timing, weather-driven flight conditions, historical context and habitat guidance." />
+  <link rel="canonical" href="https://chrisizworski.com/national-tools/monarch-migration-live" />
+  <meta name="theme-color" content="#111817" />
+  <meta property="og:title" content="Monarch Migration Live" />
+  <meta property="og:description" content="See where monarchs are being observed, when your local migration wave should arrive, and whether weather favors movement today." />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://chrisizworski.com/national-tools/monarch-migration-live" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <link rel="preconnect" href="https://unpkg.com" crossorigin />
+  <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@5.7.1/dist/maplibre-gl.css" />
+  <link rel="stylesheet" href="/national-tools/monarch-migration-live/styles.css" />
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-Y5D2V2W7HN"></script>
+  <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config','G-Y5D2V2W7HN',{anonymize_ip:true});</script>
+  <script type="application/ld+json">
+  {"@context":"https://schema.org","@type":"WebApplication","name":"Monarch Migration Live","url":"https://chrisizworski.com/national-tools/monarch-migration-live","applicationCategory":"TravelApplication","description":"Real-time and historical monarch butterfly migration intelligence using licensed community-science observations, weather and published migration phenology.","operatingSystem":"Web"}
+  </script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to migration intelligence</a>
+<header class="sitebar">
+  <a class="brand" href="https://chrisizworski.com/national-tools/">National Outdoor Tools</a>
+  <div class="sitebar-meta"><span class="live-dot"></span><span id="freshnessTop">Live sources loading</span></div>
+</header>
+
+<main id="main">
+  <section class="hero">
+    <div class="migration-glow glow-a"></div><div class="migration-glow glow-b"></div>
+    <div class="hero-inner">
+      <div class="eyebrow">NORTH AMERICAN MONARCH INTELLIGENCE</div>
+      <div class="hero-grid">
+        <div class="hero-copy">
+          <h1>MONARCH<br><span>MIGRATION LIVE</span></h1>
+          <p class="hero-deck">See the migration as a moving system: recent observations, your local timing window, today’s flight conditions, historical context and what to plant next.</p>
+          <div class="location-shell" aria-label="Choose a location">
+            <button id="geoButton" class="primary-button">Use my location</button>
+            <span class="or">or</span>
+            <form id="zipForm" class="zip-form">
+              <label class="sr-only" for="zipInput">U.S. ZIP code</label>
+              <input id="zipInput" inputmode="numeric" pattern="[0-9]{5}" maxlength="5" placeholder="ZIP code" autocomplete="postal-code" />
+              <button type="submit">Go</button>
+            </form>
+          </div>
+          <p id="locationStatus" class="location-status">National map first. Your location unlocks a local migration forecast.</p>
+        </div>
+        <div class="hero-butterfly" aria-hidden="true">
+          <svg viewBox="0 0 520 420" role="img">
+            <defs>
+              <radialGradient id="wing" cx="45%" cy="40%" r="72%"><stop offset="0" stop-color="#ffb139"/><stop offset=".62" stop-color="#e56f19"/><stop offset="1" stop-color="#9e3d13"/></radialGradient>
+              <filter id="shadow"><feDropShadow dx="0" dy="14" stdDeviation="14" flood-opacity=".35"/></filter>
+            </defs>
+            <g filter="url(#shadow)" transform="translate(260 210)">
+              <path class="wing" d="M-16,-14 C-60,-160 -220,-194 -230,-85 C-235,-15 -152,42 -35,47 C-82,77 -126,136 -77,166 C-22,192 4,97 6,24 Z"/>
+              <path class="wing" d="M16,-14 C60,-160 220,-194 230,-85 C235,-15 152,42 35,47 C82,77 126,136 77,166 C22,192 -4,97 -6,24 Z"/>
+              <path class="wing-line" d="M-22,-12 C-75,-70 -132,-122 -208,-102 M-34,42 C-94,27 -150,-10 -204,-60 M-48,51 C-85,85 -97,121 -79,155 M22,-12 C75,-70 132,-122 208,-102 M34,42 C94,27 150,-10 204,-60 M48,51 C85,85 97,121 79,155"/>
+              <ellipse class="body" cx="0" cy="18" rx="12" ry="82"/><circle class="body" cx="0" cy="-74" r="14"/>
+              <path class="antenna" d="M-5,-85 C-17,-122 -43,-136 -64,-141 M5,-85 C17,-122 43,-136 64,-141"/>
+              <g class="spots"><circle cx="-188" cy="-92" r="6"/><circle cx="-166" cy="-120" r="5"/><circle cx="-202" cy="-60" r="5"/><circle cx="188" cy="-92" r="6"/><circle cx="166" cy="-120" r="5"/><circle cx="202" cy="-60" r="5"/></g>
+            </g>
+          </svg>
+          <div class="route-stamp">UP TO <strong>2,000+ MILES</strong><span>eastern fall migration</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="decision-strip" aria-live="polite">
+    <div class="decision-head">
+      <span class="kicker">YOUR LOCAL READOUT</span>
+      <span id="readoutPlace" class="readout-place">Choose a location</span>
+    </div>
+    <div class="decision-grid">
+      <article class="metric feature">
+        <span class="metric-label">Migration Pulse <button class="info" data-tip="A modeled 0–100 index of local migration activity and flight opportunity. It is not a butterfly count.">?</button></span>
+        <div class="metric-value"><span id="pulseValue">—</span><small>/100</small></div>
+        <div id="pulseWords" class="metric-note">Waiting for location</div>
+      </article>
+      <article class="metric"><span class="metric-label">Season phase</span><div id="phaseValue" class="metric-value text">—</div><div id="timingValue" class="metric-note">Historical timing baseline</div></article>
+      <article class="metric"><span class="metric-label">Recent observations</span><div id="sightValue" class="metric-value text">—</div><div id="sightTrend" class="metric-note">Licensed iNaturalist records, not butterflies counted</div></article>
+      <article class="metric"><span class="metric-label">Flight conditions</span><div id="flightValue" class="metric-value text">—</div><div id="weatherValue" class="metric-note">NWS forecast</div></article>
+      <article class="metric"><span class="metric-label">Confidence</span><div class="metric-value"><span id="confidenceValue">—</span><small>%</small></div><div id="confidenceWords" class="metric-note">Source coverage + observation density</div></article>
+    </div>
+    <p id="decisionSentence" class="decision-sentence">Choose a location to answer the useful question: <strong>are monarchs moving through here now, and when should I watch?</strong></p>
+  </section>
+
+  <section class="map-section">
+    <div class="section-heading">
+      <div><span class="kicker">OBSERVED + MODELED</span><h2>The migration map</h2><p>Recent sightings are direct observations. The timing layer is modeled. Keep those two ideas separate.</p></div>
+      <div class="map-controls" role="group" aria-label="Map layers">
+        <button class="chip active" data-layer="recent">Recent sightings</button>
+        <button class="chip active" data-layer="timing">Migration timing</button>
+        <button class="chip active" data-layer="greatlakes">Great Lakes</button>
+        <button class="chip active" data-layer="west">Western sites</button>
+      </div>
+    </div>
+    <div class="map-frame">
+      <div id="map" aria-label="Interactive monarch migration map"></div>
+      <div class="map-legend">
+        <div><i class="dot recent"></i><span><strong>Observed</strong> recent licensed sighting</span></div>
+        <div><i class="line timing"></i><span><strong>Modeled</strong> seasonal timing band</span></div>
+        <div><i class="dot lake"></i><span>Great Lakes concentration/crossing context</span></div>
+      </div>
+      <div id="mapLoading" class="map-loading">Loading recent monarch observations…</div>
+    </div>
+    <div class="map-foot"><span id="mapCount">—</span><span>Map records are observations, not a population estimate.</span><a href="https://www.inaturalist.org" target="_blank" rel="noopener">iNaturalist source ↗</a></div>
+  </section>
+
+  <section class="story-grid section-pad">
+    <article class="story-card habitat-card">
+      <span class="kicker">HELP THE NEXT WAVE</span><h2>What should I plant — and when?</h2>
+      <p id="habitatAction">Choose your location and the tool will change the guidance with the migration season.</p>
+      <div class="habitat-steps">
+        <div><span>01</span><strong>Milkweed for breeding</strong><p>Native milkweeds are larval host plants. Establish them for the breeding season, not as a last-minute fall migration fix.</p></div>
+        <div><span>02</span><strong>Nectar for the journey</strong><p>Late-season native flowers matter when southbound monarchs are refueling.</p></div>
+        <div><span>03</span><strong>Match local frost timing</strong><p>Use your local planting and frost windows rather than a national one-date-fits-all rule.</p></div>
+      </div>
+      <a class="text-link" href="https://chrisizworski.com/national-tools/planting">Open the National Planting Calendar →</a>
+    </article>
+    <article class="story-card lake-card">
+      <span class="kicker">GREAT LAKES PHENOMENON</span><h2>Why monarchs can “stack up” on the lakes</h2>
+      <p>During fall migration, shorelines, peninsulas, islands, headwinds and passing fronts can concentrate monarchs. They may stream along shore, gather before a crossing, or form overnight roosts.</p>
+      <div class="lake-stat"><strong>500+</strong><span>monarchs have been documented in individual Great Lakes roost observations.</span></div>
+      <p class="fine">The Great Lakes layer marks known context areas; it does not claim every point is an active roost today.</p>
+    </article>
+  </section>
+
+  <section class="education section-pad">
+    <div class="section-heading"><div><span class="kicker">MIGRATION IN 60 SECONDS</span><h2>The trip is stranger than it looks</h2><p>The orange dots are only the visible surface of a remarkable annual cycle.</p></div></div>
+    <div class="education-grid">
+      <article><span>01</span><h3>Northbound takes generations</h3><p>Spring recolonization is a relay. The butterflies reaching the northern breeding range are descendants of the monarchs that left Mexico.</p></article>
+      <article><span>02</span><h3>Southbound is the marathon</h3><p>The fall migratory generation can live for many months and eastern monarchs may travel more than 2,000 miles to central Mexico.</p></article>
+      <article><span>03</span><h3>The wave has a clock</h3><p>Latitude and the seasonal sun create a repeatable timing pattern, while fronts, wind and temperature can speed up, stall or concentrate the flight.</p></article>
+      <article><span>04</span><h3>There are two major migrations</h3><p>Eastern monarchs generally winter in Mexico. Western monarchs primarily use coastal California and northern Baja, with some mixing between populations.</p></article>
+    </div>
+  </section>
+
+  <section class="history-section section-pad">
+    <div class="section-heading"><div><span class="kicker">LONG VIEW</span><h2>Population trend ≠ today’s migration</h2><p>Annual overwintering surveys tell us how the populations are doing. They should not be confused with the live map.</p></div></div>
+    <div class="population-cards">
+      <article class="population-card east"><span class="population-tag">EASTERN</span><div class="population-number">2.93 <small>ha</small></div><h3>Winter 2025–26 in Mexico</h3><p>Area occupied by clustered eastern monarchs. Up from 1.79 ha the prior winter.</p><div id="eastBars" class="mini-bars" aria-label="Recent eastern overwintering trend"></div></article>
+      <article class="population-card west"><span class="population-tag">WESTERN</span><div class="population-number">12,260</div><h3>2025 mid-season count</h3><p>Monarchs counted across 249 western overwintering sites — still near historic lows.</p><div class="survey-dates"><strong>2026 surveys</strong><span>Early: Oct 17–Nov 1</span><span>Mid: Nov 14–Dec 6</span><span>Late: Dec 26–Jan 10</span></div></article>
+    </div>
+  </section>
+
+  <section class="history-local section-pad">
+    <div class="section-heading"><div><span class="kicker">YOUR AREA OVER TIME</span><h2>Historical observation footprint</h2><p>This is an observation index, not abundance. More observers and better platforms can create more records.</p></div></div>
+    <div id="historyChart" class="history-chart"><div class="empty-chart">Choose a location to load commercially reusable GBIF occurrence history.</div></div>
+  </section>
+
+  <section class="explain-section section-pad">
+    <div class="section-heading"><div><span class="kicker">HOW THE ENGINE THINKS</span><h2>One score, four ingredients</h2><p>The score is deterministic and inspectable. If a source fails, the confidence falls instead of inventing precision.</p></div></div>
+    <div class="explain-grid">
+      <article><b>40%</b><h3>Recent observations</h3><p>Licensed community-science records near the selected location and whether reporting is rising or falling.</p></article>
+      <article><b>30%</b><h3>Historical timing</h3><p>Published latitude-based arrival and fall peak phenology. Western locations receive less timing weight.</p></article>
+      <article><b>25%</b><h3>Flight weather</h3><p>Temperature, precipitation and fall southbound tailwind from the National Weather Service.</p></article>
+      <article><b>5%</b><h3>Freshness</h3><p>Stale or failed sources reduce the model instead of being silently treated as current.</p></article>
+    </div>
+  </section>
+
+  <section class="sources section-pad">
+    <div class="section-heading"><div><span class="kicker">PROVENANCE FIRST</span><h2>What is live, what is historical, what is linked</h2></div></div>
+    <div class="source-table">
+      <div class="source-row"><span class="source-kind observed">OBSERVED</span><strong>iNaturalist</strong><span>Recent monarch occurrence records</span><span>CC0 / CC BY records only</span></div>
+      <div class="source-row"><span class="source-kind live">LIVE</span><strong>National Weather Service</strong><span>Hourly temperature, wind and precipitation</span><span>Open U.S. government data</span></div>
+      <div class="source-row"><span class="source-kind historical">HISTORICAL</span><strong>GBIF</strong><span>Local occurrence history</span><span>CC0 / CC BY only</span></div>
+      <div class="source-row"><span class="source-kind modeled">MODELED</span><strong>Monarch Watch phenology</strong><span>Latitude migration timing baseline</span><span>Published reference parameters</span></div>
+      <div class="source-row"><span class="source-kind linked">LINKED</span><strong>Journey North</strong><span>Exceptional first-sighting / roost community science</span><span>Linked, not republished on this commercial site</span></div>
+    </div>
+    <div class="source-links"><a href="https://monarchwatch.org/tagging/" target="_blank" rel="noopener">Monarch Watch ↗</a><a href="https://journeynorth.org/monarchs" target="_blank" rel="noopener">Journey North ↗</a><a href="https://www.fws.gov/species/monarch-danaus-plexippus" target="_blank" rel="noopener">U.S. Fish & Wildlife Service ↗</a><a href="https://westernmonarchcount.org/" target="_blank" rel="noopener">Western Monarch Count ↗</a></div>
+  </section>
+</main>
+<footer><strong>Monarch Migration Live</strong><span>Decision intelligence, not a wildlife census.</span><a href="https://chrisizworski.com/national-tools/">More National Outdoor Tools</a></footer>
+
+<script src="https://unpkg.com/maplibre-gl@5.7.1/dist/maplibre-gl.js"></script>
+<script type="module" src="/national-tools/monarch-migration-live/app.js"></script>
+</body></html>
