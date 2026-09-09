@@ -21,6 +21,18 @@ function pulseWords(score){ if(score>=78)return 'Strong local migration signal';
 function flightWords(score){ if(score>=78)return 'Very favorable'; if(score>=62)return 'Favorable'; if(score>=45)return 'Mixed'; if(score>=28)return 'Poor'; return 'Very poor'; }
 function safe(s){ return String(s??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c])); }
 
+async function readJsonResponse(response, label='Request'){
+  const text=await response.text();
+  let data=null;
+  try{ data=text ? JSON.parse(text) : {}; }
+  catch{
+    const preview=text.trim().slice(0,120);
+    throw new Error(`${label} returned a non-JSON server response${preview?`: ${preview}`:''}`);
+  }
+  if(!response.ok) throw new Error(data?.error || `${label} failed (${response.status})`);
+  return data;
+}
+
 function initBars(){
   const vals=[2.48,6.05,2.83,2.10,2.84,2.21,.90,1.79,2.93], max=6.05;
   $('#eastBars').innerHTML=vals.map((v,i)=>`<i style="height:${Math.max(8,v/max*100)}%" title="${2017+i}: ${v} ha"></i>`).join('');
@@ -90,7 +102,7 @@ function showContextPopup(feature){
 async function loadRecent(){
   try{
     const u=new URL(api('/api/sightings'),location.origin); Object.entries({days:14,limit:200,nelat:51,nelng:-65,swlat:24,swlng:-125}).forEach(([k,v])=>u.searchParams.set(k,v));
-    const r=await fetch(u); const d=await r.json(); if(!r.ok)throw new Error();
+    const r=await fetch(u); const d=await readJsonResponse(r,'Sightings');
     const features=(d.results||[]).map(x=>({type:'Feature',properties:{id:x.id,observedOn:x.observedOn,place:x.place||'',license:x.license,url:x.url},geometry:{type:'Point',coordinates:[x.lng,x.lat]}}));
     state.map?.getSource('recent')?.setData({type:'FeatureCollection',features});
     $('#mapCount').textContent=`${features.length.toLocaleString()} recent licensed records shown`;
@@ -115,8 +127,8 @@ async function useLocation(lat,lng,label='Your location'){
     state.map.flyTo({center:[lng,lat],zoom:6.2,essential:true});
   }
   const [contextResult,historyResult]=await Promise.allSettled([
-    fetch(`${api('/api/context')}?lat=${encodeURIComponent(lat)}&lng=${encodeURIComponent(lng)}`).then(async r=>{const d=await r.json();if(!r.ok)throw new Error(d.error);return d}),
-    fetch(`${api('/api/history')}?lat=${encodeURIComponent(lat)}&lng=${encodeURIComponent(lng)}&radius=2.5`).then(async r=>{const d=await r.json();if(!r.ok)throw new Error(d.error);return d})
+    fetch(`${api('/api/context')}?lat=${encodeURIComponent(lat)}&lng=${encodeURIComponent(lng)}`).then(r=>readJsonResponse(r,'Local migration context')),
+    fetch(`${api('/api/history')}?lat=${encodeURIComponent(lat)}&lng=${encodeURIComponent(lng)}&radius=2.5`).then(r=>readJsonResponse(r,'Historical context'))
   ]);
   if(contextResult.status==='fulfilled')renderContext(contextResult.value,label);else{$('#locationStatus').textContent='Local model could not load. The national map remains available.';}
   if(historyResult.status==='fulfilled')renderHistory(historyResult.value);else renderHistory({years:[]});
@@ -169,7 +181,7 @@ $('#geoButton').addEventListener('click',()=>{
 $('#zipForm').addEventListener('submit',async e=>{
   e.preventDefault(); const zip=$('#zipInput').value.trim(); if(!/^\d{5}$/.test(zip)){$('#locationStatus').textContent='Enter a valid 5-digit ZIP code.';return;}
   $('#locationStatus').textContent='Looking up ZIP code…';
-  try{const r=await fetch(`${api('/api/geocode')}?zip=${encodeURIComponent(zip)}`);const d=await r.json();if(!r.ok)throw new Error(d.error);await useLocation(d.lat,d.lng,d.name);}catch(err){$('#locationStatus').textContent=err.message||'ZIP lookup failed.';}
+  try{const r=await fetch(`${api('/api/geocode')}?zip=${encodeURIComponent(zip)}`);const d=await readJsonResponse(r,'ZIP lookup');await useLocation(d.lat,d.lng,d.name);}catch(err){$('#locationStatus').textContent=err.message||'ZIP lookup failed.';}
 });
 
 $$('.info').forEach(btn=>{btn.addEventListener('click',()=>alert(btn.dataset.tip));});
