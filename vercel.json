@@ -2,9 +2,10 @@
   "cleanUrls": false,
   "trailingSlash": false,
   "rewrites": [
-    { "source": "/national-tools/monarch-migration-live", "destination": "/index.html" },
+    { "source": "/", "destination": "/public/index.html" },
+    { "source": "/national-tools/monarch-migration-live", "destination": "/public/index.html" },
     { "source": "/national-tools/monarch-migration-live/api/:path*", "destination": "/api/:path*" },
-    { "source": "/national-tools/monarch-migration-live/:path*", "destination": "/:path*" }
+    { "source": "/national-tools/monarch-migration-live/:path*", "destination": "/public/:path*" }
   ],
   "headers": [
     {
