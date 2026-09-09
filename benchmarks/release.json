@@ -1,0 +1,13 @@
+{
+  "minimumReleaseScore": 90,
+  "targetValueScore": 93,
+  "hardVetoes": [
+    "Never label modeled migration pulse as a butterfly count",
+    "Never republish Journey North noncommercial data without permission",
+    "Never republish iNaturalist/GBIF records unless the record license is commercially reusable",
+    "Never merge eastern and western population status into one number",
+    "Never show stale live data without freshness/degradation messaging",
+    "Do not ship without mobile location controls and interactive map",
+    "Do not add the engine implementation to national-outdoor-tools-hub"
+  ]
+}
