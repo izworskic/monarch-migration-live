@@ -30,7 +30,7 @@ jobs:
             echo "HTTP ${status}"
             cat /tmp/headers
             echo "--- body preview ---"
-            head -c 500 /tmp/body || true
+            head -c 700 /tmp/body || true
             echo
             if [ "$status" != "200" ]; then
               failures=$((failures+1))
@@ -50,9 +50,12 @@ jobs:
           probe "canonical page" "$CANON?v=smoke-${GITHUB_SHA}" html
           probe "canonical ping" "$CANON/api/ping?smoke=${GITHUB_SHA}" json
           probe "k7om direct ping" "$K7/api/ping?smoke=${GITHUB_SHA}" json
-          probe "k7om namespaced ping" "$K7/national-tools/monarch-migration-live/api/ping?smoke=${GITHUB_SHA}" json
           probe "plain direct ping" "$PLAIN/api/ping?smoke=${GITHUB_SHA}" json
-          probe "plain namespaced ping" "$PLAIN/national-tools/monarch-migration-live/api/ping?smoke=${GITHUB_SHA}" json
+          probe "plain status" "$PLAIN/api/status?smoke=${GITHUB_SHA}" json
+          probe "plain context" "$PLAIN/api/context?lat=43.6&lng=-83.9&smoke=${GITHUB_SHA}" json
+          probe "plain geocode" "$PLAIN/api/geocode?zip=48706&smoke=${GITHUB_SHA}" json
+          probe "plain sightings" "$PLAIN/api/sightings?days=3&limit=5&smoke=${GITHUB_SHA}" json
+          probe "plain history" "$PLAIN/api/history?lat=43.6&lng=-83.9&radius=1&smoke=${GITHUB_SHA}" json
 
           echo "Failures: $failures"
           test "$failures" -eq 0
