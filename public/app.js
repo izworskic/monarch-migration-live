@@ -118,6 +118,50 @@ function setLayer(name,visible){
 
 $$('.chip').forEach(btn=>btn.addEventListener('click',()=>{const name=btn.dataset.layer;btn.classList.toggle('active');setLayer(name,btn.classList.contains('active'));}));
 
+const DAY_MS=86400000;
+function dateForLat(table, latitude, year){
+  const lat=Math.max(table.at(-1)[0],Math.min(table[0][0],latitude));
+  let hi=table[0],lo=table.at(-1);
+  for(let i=0;i<table.length-1;i++){
+    if(lat<=table[i][0]&&lat>=table[i+1][0]){hi=table[i];lo=table[i+1];break;}
+  }
+  const parse=([,md])=>{const [m,d]=md.split('-').map(Number);return Date.UTC(year,m-1,d,12)};
+  const f=(hi[0]-lat)/Math.max(.001,hi[0]-lo[0]);
+  return new Date(parse(hi)+(parse(lo)-parse(hi))*f);
+}
+function fallbackHabitat(phase){
+  if(phase==='pre-arrival'||phase==='spring-arrival')return 'Prioritize native milkweed establishment and early-to-midseason nectar continuity before breeding activity builds.';
+  if(phase==='breeding-season')return 'Keep native milkweed and pesticide-free nectar resources available; avoid cutting all milkweed at once.';
+  if(phase==='pre-migration'||phase==='fall-migration')return 'Prioritize abundant late-blooming native nectar sources. Migrants need refueling habitat more than new milkweed establishment now.';
+  return 'Plan next season’s native milkweed and nectar sequence using local frost and planting windows.';
+}
+function buildTimingFallback(lat,lng){
+  const now=new Date(),year=now.getUTCFullYear(),t=now.getTime();
+  const spring=dateForLat(SPRING,lat,year),mid=dateForLat(FALL,lat,year);
+  const leading=new Date(mid.getTime()-18*DAY_MS),peakStart=new Date(mid.getTime()-8*DAY_MS),peakEnd=new Date(mid.getTime()+4*DAY_MS),trailing=new Date(mid.getTime()+18*DAY_MS);
+  let phase='post-migration';
+  if(t<spring.getTime()-30*DAY_MS)phase='pre-arrival';
+  else if(t<spring.getTime()+21*DAY_MS)phase='spring-arrival';
+  else if(t<leading.getTime()-28*DAY_MS)phase='breeding-season';
+  else if(t<leading.getTime())phase='pre-migration';
+  else if(t<=trailing.getTime())phase='fall-migration';
+  let timing=phase==='breeding-season'?28:phase==='pre-migration'?38:phase==='spring-arrival'?55:8;
+  if(phase==='fall-migration'){
+    const d=Math.abs(t-mid.getTime())/DAY_MS;
+    timing=Math.max(35,Math.exp(-.5*Math.pow(d/7.5,2))*100);
+  }
+  const score=Math.max(8,Math.min(82,Math.round(20+timing*.62)));
+  return {
+    generatedAt:now.toISOString(),fallback:true,location:{lat,lng},population:lng<-105?'west':'east',
+    sourceState:{weather:'degraded',observations:'degraded'},
+    observationSummary:{recent7dRecords:null,previous7dRecords:null,unit:'unavailable',warning:'Live observation service is temporarily unavailable.'},
+    weather:{temperatureF:null,windSpeedMph:null,windDirection:null,windDirectionDeg:null,precipProbability:null,shortForecast:null,forecastTime:null},
+    model:{score,confidence:30,phase,components:{liveObservations:0,historicalTiming:Math.round(timing),flightConditions:50,freshness:25},observationTrend:'unavailable',label:'Migration Pulse',semantics:'Timing-only degraded fallback; live observations and weather unavailable.'},
+    timing:{springArrival:spring.toISOString(),fallLeadingEdge:leading.toISOString(),fallPeakStart:peakStart.toISOString(),fallMidpoint:mid.toISOString(),fallPeakEnd:peakEnd.toISOString(),fallTrailingEnd:trailing.toISOString()},
+    habitatAction:fallbackHabitat(phase)
+  };
+}
+
 async function useLocation(lat,lng,label='Your location'){
   state.selected={lat,lng,label};
   $('#locationStatus').textContent=`Loading local migration intelligence for ${label}…`;
@@ -130,7 +174,7 @@ async function useLocation(lat,lng,label='Your location'){
     fetch(`${api('/api/context')}?lat=${encodeURIComponent(lat)}&lng=${encodeURIComponent(lng)}`).then(r=>readJsonResponse(r,'Local migration context')),
     fetch(`${api('/api/history')}?lat=${encodeURIComponent(lat)}&lng=${encodeURIComponent(lng)}&radius=2.5`).then(r=>readJsonResponse(r,'Historical context'))
   ]);
-  if(contextResult.status==='fulfilled')renderContext(contextResult.value,label);else{$('#locationStatus').textContent='Local model could not load. The national map remains available.';}
+  if(contextResult.status==='fulfilled')renderContext(contextResult.value,label);else renderContext(buildTimingFallback(lat,lng),label);
   if(historyResult.status==='fulfilled')renderHistory(historyResult.value);else renderHistory({years:[]});
   try{localStorage.setItem('monarch-location',JSON.stringify({lat,lng,label}));}catch{}
 }
@@ -161,8 +205,11 @@ function renderContext(d,label){
   else if(m.phase==='pre-migration') sentence+=`The fall wave is approaching; the historical peak is ${fmtDate(d.timing?.fallPeakStart)}–${fmtDate(d.timing?.fallPeakEnd)}.`;
   else sentence+=`The current seasonal phase is ${phase}.`;
   $('#decisionSentence').textContent=sentence;
-  $('#locationStatus').textContent=`${label} · ${d.population==='west'?'Western':'Eastern'} migration model · updated ${new Date(d.generatedAt).toLocaleTimeString([],{hour:'numeric',minute:'2-digit'})}`;
-  if(d.sourceState?.weather==='degraded'||d.sourceState?.observations==='degraded') $('#freshnessTop').textContent='Local readout has a degraded source';
+  $('#locationStatus').textContent=d.fallback
+    ? `${label} · historical timing fallback · live local feeds unavailable`
+    : `${label} · ${d.population==='west'?'Western':'Eastern'} migration model · updated ${new Date(d.generatedAt).toLocaleTimeString([],{hour:'numeric',minute:'2-digit'})}`;
+  if(d.fallback) $('#freshnessTop').textContent='Live local feeds unavailable · timing model shown';
+  else if(d.sourceState?.weather==='degraded'||d.sourceState?.observations==='degraded') $('#freshnessTop').textContent='Local readout has a degraded source';
   if(window.gtag)gtag('event','monarch_location_readout',{method:label==='Your location'?'device':'zip',population:d.population,phase:m.phase});
 }
 
@@ -181,7 +228,17 @@ $('#geoButton').addEventListener('click',()=>{
 $('#zipForm').addEventListener('submit',async e=>{
   e.preventDefault(); const zip=$('#zipInput').value.trim(); if(!/^\d{5}$/.test(zip)){$('#locationStatus').textContent='Enter a valid 5-digit ZIP code.';return;}
   $('#locationStatus').textContent='Looking up ZIP code…';
-  try{const r=await fetch(`${api('/api/geocode')}?zip=${encodeURIComponent(zip)}`);const d=await readJsonResponse(r,'ZIP lookup');await useLocation(d.lat,d.lng,d.name);}catch(err){$('#locationStatus').textContent=err.message||'ZIP lookup failed.';}
+  try{
+    let d;
+    try{const r=await fetch(`${api('/api/geocode')}?zip=${encodeURIComponent(zip)}`);d=await readJsonResponse(r,'ZIP lookup');}
+    catch{
+      const r=await fetch(`https://api.zippopotam.us/us/${encodeURIComponent(zip)}`);
+      const z=await readJsonResponse(r,'ZIP lookup'); const place=z.places?.[0];
+      if(!place)throw new Error('ZIP code not found.');
+      d={lat:Number(place.latitude),lng:Number(place.longitude),name:`${place['place name']}, ${place['state abbreviation']}`};
+    }
+    await useLocation(d.lat,d.lng,d.name);
+  }catch(err){$('#locationStatus').textContent=err.message||'ZIP lookup failed.';}
 });
 
 $$('.info').forEach(btn=>{btn.addEventListener('click',()=>alert(btn.dataset.tip));});
