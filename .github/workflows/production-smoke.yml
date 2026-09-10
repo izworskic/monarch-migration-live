@@ -34,13 +34,7 @@ jobs:
             echo
             test "$status" = "200"
             if [ "$expected_type" = "json" ]; then
-              python - <<'PY'
-import json
-from pathlib import Path
-text=Path('/tmp/body').read_text(errors='replace')
-json.loads(text)
-print('VALID_JSON')
-PY
+              python -c "import json, pathlib; json.loads(pathlib.Path('/tmp/body').read_text(errors='replace')); print('VALID_JSON')"
             fi
           }
 
