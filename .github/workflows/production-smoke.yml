@@ -5,6 +5,9 @@ on:
     branches:
       - main
       - fix/production-routing-architecture
+  pull_request:
+    branches:
+      - main
   workflow_dispatch:
 
 jobs:
