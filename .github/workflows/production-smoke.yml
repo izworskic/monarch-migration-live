@@ -5,6 +5,7 @@ on:
     branches:
       - main
       - fix/production-routing-architecture
+      - fix/api-local-runtime
   pull_request:
     branches:
       - main
@@ -40,6 +41,7 @@ jobs:
 
           probe "page" "$BASE?v=smoke-${GITHUB_SHA}" html
           probe "app.js" "$BASE/app.js?v=smoke-${GITHUB_SHA}" js
+          probe "ping api" "$BASE/api/ping?smoke=${GITHUB_SHA}" json
           probe "status api" "$BASE/api/status?smoke=${GITHUB_SHA}" json
           probe "context api" "$BASE/api/context?lat=43.6&lng=-83.9&smoke=${GITHUB_SHA}" json
           probe "geocode api" "$BASE/api/geocode?zip=48706&smoke=${GITHUB_SHA}" json
