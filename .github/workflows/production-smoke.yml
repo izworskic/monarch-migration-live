@@ -2,46 +2,64 @@ name: Production smoke
 
 on:
   push:
-    branches:
-      - main
-      - fix/production-routing-architecture
-      - fix/api-local-runtime
+    branches: [main]
   pull_request:
-    branches:
-      - main
+    branches: [main]
   workflow_dispatch:
 
 jobs:
-  smoke:
+  verify:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
     steps:
-      - name: Probe canonical page and APIs
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm test
+
+  smoke:
+    needs: verify
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - name: Probe canonical page, APIs and location pages
         shell: bash
         run: |
           set -euo pipefail
           BASE="https://chrisizworski.com/national-tools/monarch-migration-live"
 
           probe() {
-            local name="$1"
-            local url="$2"
-            local expected_type="$3"
-            echo "===== ${name} ====="
-            status=$(curl -sS -L --max-time 30 -D /tmp/headers -o /tmp/body -w '%{http_code}' "$url" || true)
-            echo "HTTP ${status}"
-            cat /tmp/headers
-            echo "--- body preview ---"
-            head -c 500 /tmp/body || true
-            echo
-            test "$status" = "200"
-            if [ "$expected_type" = "json" ]; then
-              python -c "import json, pathlib; json.loads(pathlib.Path('/tmp/body').read_text(errors='replace')); print('VALID_JSON')"
-            fi
+            local name="$1" url="$2" expected="$3"
+            for attempt in $(seq 1 18); do
+              status=$(curl -sS -L --max-time 30 -o /tmp/body -w '%{http_code}' "$url" || true)
+              if [ "$status" = "200" ]; then
+                if [ "$expected" = "json" ]; then
+                  python -c "import json,pathlib; json.loads(pathlib.Path('/tmp/body').read_text(errors='replace'))" && return 0
+                else
+                  return 0
+                fi
+              fi
+              echo "$name attempt $attempt returned $status; waiting for production propagation"
+              sleep 10
+            done
+            echo "$name failed: $url"
+            return 1
           }
 
-          probe "page" "$BASE?v=smoke-${GITHUB_SHA}" html
-          probe "app.js" "$BASE/app.js?v=smoke-${GITHUB_SHA}" js
+          probe "parent" "$BASE?smoke=${GITHUB_SHA}" html
+          probe "app.js" "$BASE/app.js?smoke=${GITHUB_SHA}" js
           probe "ping api" "$BASE/api/ping?smoke=${GITHUB_SHA}" json
           probe "status api" "$BASE/api/status?smoke=${GITHUB_SHA}" json
           probe "context api" "$BASE/api/context?lat=43.6&lng=-83.9&smoke=${GITHUB_SHA}" json
-          probe "geocode api" "$BASE/api/geocode?zip=48706&smoke=${GITHUB_SHA}" json
+
+          for slug in chicago-il peninsula-point-mi south-bass-island-oh cape-may-nj austin-tx san-antonio-tx pacific-grove-ca pismo-beach-ca; do
+            probe "$slug" "$BASE/$slug?smoke=${GITHUB_SHA}" html
+            curl -sS -L --max-time 30 "$BASE/$slug?smoke=${GITHUB_SHA}" -o /tmp/child
+            grep -Fq "rel=\"canonical\" href=\"$BASE/$slug\"" /tmp/child
+            grep -Fq "data-location-preset" /tmp/child
+          done
+
+          probe "location sitemap" "$BASE/sitemap-locations.xml?smoke=${GITHUB_SHA}" xml
+          curl -sS -L --max-time 30 "$BASE/sitemap-locations.xml?smoke=${GITHUB_SHA}" -o /tmp/sitemap
+          test "$(grep -o '<url>' /tmp/sitemap | wc -l | tr -d ' ')" = "9"

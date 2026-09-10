@@ -1,6 +1,7 @@
 {
   "cleanUrls": false,
   "trailingSlash": false,
+  "buildCommand": "npm run vercel-build",
   "outputDirectory": "public",
   "functions": {
     "api/context.js": { "maxDuration": 20, "includeFiles": "lib/**" },
