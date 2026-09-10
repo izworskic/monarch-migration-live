@@ -4,8 +4,7 @@ on:
   push:
     branches:
       - main
-      - fix/production-routing-architecture
-      - fix/api-local-runtime
+      - diagnose/vercel-origins
   pull_request:
     branches:
       - main
@@ -16,11 +15,11 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-      - name: Probe canonical page and APIs
+      - name: Probe canonical route and Vercel origins
         shell: bash
         run: |
-          set -euo pipefail
-          BASE="https://chrisizworski.com/national-tools/monarch-migration-live"
+          set -u
+          failures=0
 
           probe() {
             local name="$1"
@@ -33,15 +32,27 @@ jobs:
             echo "--- body preview ---"
             head -c 500 /tmp/body || true
             echo
-            test "$status" = "200"
+            if [ "$status" != "200" ]; then
+              failures=$((failures+1))
+              return
+            fi
             if [ "$expected_type" = "json" ]; then
-              python -c "import json, pathlib; json.loads(pathlib.Path('/tmp/body').read_text(errors='replace')); print('VALID_JSON')"
+              if ! python -c "import json, pathlib; json.loads(pathlib.Path('/tmp/body').read_text(errors='replace')); print('VALID_JSON')"; then
+                failures=$((failures+1))
+              fi
             fi
           }
 
-          probe "page" "$BASE?v=smoke-${GITHUB_SHA}" html
-          probe "app.js" "$BASE/app.js?v=smoke-${GITHUB_SHA}" js
-          probe "ping api" "$BASE/api/ping?smoke=${GITHUB_SHA}" json
-          probe "status api" "$BASE/api/status?smoke=${GITHUB_SHA}" json
-          probe "context api" "$BASE/api/context?lat=43.6&lng=-83.9&smoke=${GITHUB_SHA}" json
-          probe "geocode api" "$BASE/api/geocode?zip=48706&smoke=${GITHUB_SHA}" json
+          CANON="https://chrisizworski.com/national-tools/monarch-migration-live"
+          K7="https://monarch-migration-live-k7om.vercel.app"
+          PLAIN="https://monarch-migration-live.vercel.app"
+
+          probe "canonical page" "$CANON?v=smoke-${GITHUB_SHA}" html
+          probe "canonical ping" "$CANON/api/ping?smoke=${GITHUB_SHA}" json
+          probe "k7om direct ping" "$K7/api/ping?smoke=${GITHUB_SHA}" json
+          probe "k7om namespaced ping" "$K7/national-tools/monarch-migration-live/api/ping?smoke=${GITHUB_SHA}" json
+          probe "plain direct ping" "$PLAIN/api/ping?smoke=${GITHUB_SHA}" json
+          probe "plain namespaced ping" "$PLAIN/national-tools/monarch-migration-live/api/ping?smoke=${GITHUB_SHA}" json
+
+          echo "Failures: $failures"
+          test "$failures" -eq 0
