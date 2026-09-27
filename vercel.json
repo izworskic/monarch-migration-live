@@ -1,28 +1,64 @@
 {
   "cleanUrls": false,
   "trailingSlash": false,
-  "buildCommand": "npm run vercel-build",
+  "buildCommand": "npm run vercel-build && node scripts/inject-network-ads.mjs public",
   "outputDirectory": "public",
   "functions": {
-    "api/context.js": { "maxDuration": 20, "includeFiles": "lib/**" },
-    "api/history.js": { "maxDuration": 20, "includeFiles": "lib/**" },
-    "api/sightings.js": { "maxDuration": 15, "includeFiles": "lib/**" },
-    "api/geocode.js": { "maxDuration": 10, "includeFiles": "lib/**" },
-    "api/status.js": { "maxDuration": 10, "includeFiles": "lib/**" }
+    "api/context.js": {
+      "maxDuration": 20,
+      "includeFiles": "lib/**"
+    },
+    "api/history.js": {
+      "maxDuration": 20,
+      "includeFiles": "lib/**"
+    },
+    "api/sightings.js": {
+      "maxDuration": 15,
+      "includeFiles": "lib/**"
+    },
+    "api/geocode.js": {
+      "maxDuration": 10,
+      "includeFiles": "lib/**"
+    },
+    "api/status.js": {
+      "maxDuration": 10,
+      "includeFiles": "lib/**"
+    }
   },
   "rewrites": [
-    { "source": "/", "destination": "/index.html" },
-    { "source": "/national-tools/monarch-migration-live", "destination": "/index.html" },
-    { "source": "/national-tools/monarch-migration-live/api/:path*", "destination": "/api/:path*" },
-    { "source": "/national-tools/monarch-migration-live/:path*", "destination": "/:path*" }
+    {
+      "source": "/",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/national-tools/monarch-migration-live",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/national-tools/monarch-migration-live/api/:path*",
+      "destination": "/api/:path*"
+    },
+    {
+      "source": "/national-tools/monarch-migration-live/:path*",
+      "destination": "/:path*"
+    }
   ],
   "headers": [
     {
       "source": "/(.*)",
       "headers": [
-        { "key": "X-Content-Type-Options", "value": "nosniff" },
-        { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" },
-        { "key": "Permissions-Policy", "value": "camera=(), microphone=(), geolocation=(self)" }
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "strict-origin-when-cross-origin"
+        },
+        {
+          "key": "Permissions-Policy",
+          "value": "camera=(), microphone=(), geolocation=(self)"
+        }
       ]
     }
   ]
