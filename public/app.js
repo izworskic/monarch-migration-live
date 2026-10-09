@@ -230,28 +230,35 @@ function fallbackHabitat(phase){
 }
 function buildTimingFallback(lat,lng){
   const now=new Date(),year=now.getUTCFullYear(),t=now.getTime();
-  const spring=dateForLat(SPRING,lat,year),mid=dateForLat(FALL,lat,year);
-  const leading=new Date(mid.getTime()-18*DAY_MS),peakStart=new Date(mid.getTime()-8*DAY_MS),peakEnd=new Date(mid.getTime()+4*DAY_MS),trailing=new Date(mid.getTime()+18*DAY_MS);
-  let phase='post-migration';
-  if(t<spring.getTime()-30*DAY_MS)phase='pre-arrival';
-  else if(t<spring.getTime()+21*DAY_MS)phase='spring-arrival';
-  else if(t<leading.getTime()-28*DAY_MS)phase='breeding-season';
-  else if(t<leading.getTime())phase='pre-migration';
-  else if(t<=trailing.getTime())phase='fall-migration';
-  let timing=phase==='breeding-season'?28:phase==='pre-migration'?38:phase==='spring-arrival'?55:8;
-  if(phase==='fall-migration'){
-    const d=Math.abs(t-mid.getTime())/DAY_MS;
-    timing=Math.max(35,Math.exp(-.5*Math.pow(d/7.5,2))*100);
+  const population=lng < -105?'west':'east';
+  const coastal=population==='west'&&lng<=-119&&lat>=32&&lat<=41;
+  const md=(now.getUTCMonth()+1)*100+now.getUTCDate();
+  let phase='post-migration',timing={springArrival:null,fallPeakStart:null,fallPeakEnd:null};
+  if(population==='west'){
+    phase=coastal?(md>=1010&&md<=1114?'western-arrival':md>=1115||md<=215?'western-overwintering':md>=216&&md<=315?'western-departure':'western-summer')
+      :md>=901&&md<=1115?'western-migration':'western-seasonal';
+    timing={...timing,westernArrivalTypical:'Mid-October to mid-November',westernPeakTypical:'November through January'};
+  }else{
+    const spring=dateForLat(SPRING,lat,year),mid=dateForLat(FALL,lat,year);
+    const leading=new Date(mid.getTime()-18*DAY_MS),peakStart=new Date(mid.getTime()-8*DAY_MS);
+    const peakEnd=new Date(mid.getTime()+4*DAY_MS),trailing=new Date(mid.getTime()+18*DAY_MS);
+    if(t<spring.getTime()-30*DAY_MS)phase='pre-arrival';
+    else if(t<spring.getTime()+21*DAY_MS)phase='spring-arrival';
+    else if(t<leading.getTime()-28*DAY_MS)phase='breeding-season';
+    else if(t<leading.getTime())phase='pre-migration';
+    else if(t<=trailing.getTime())phase='fall-migration';
+    timing={springArrival:spring.toISOString(),fallLeadingEdge:leading.toISOString(),fallPeakStart:peakStart.toISOString(),fallMidpoint:mid.toISOString(),fallPeakEnd:peakEnd.toISOString(),fallTrailingEnd:trailing.toISOString()};
   }
-  const score=Math.max(8,Math.min(82,Math.round(20+timing*.62)));
   return {
-    generatedAt:now.toISOString(),fallback:true,location:{lat,lng},population:lng<-105?'west':'east',
+    generatedAt:now.toISOString(),fallback:true,location:{lat,lng},population,
     sourceState:{weather:'degraded',observations:'degraded'},
-    observationSummary:{recent7dRecords:null,previous7dRecords:null,unit:'unavailable',warning:'Live observation service is temporarily unavailable.'},
+    observationSummary:{recent7dRecords:null,previous7dRecords:null,unit:'unavailable',warning:'Live observation service unavailable.'},
     weather:{temperatureF:null,windSpeedMph:null,windDirection:null,windDirectionDeg:null,precipProbability:null,shortForecast:null,forecastTime:null},
-    model:{score,confidence:30,phase,components:{liveObservations:0,historicalTiming:Math.round(timing),flightConditions:50,freshness:25},observationTrend:'unavailable',label:'Migration Pulse',semantics:'Timing-only degraded fallback; live observations and weather unavailable.'},
-    timing:{springArrival:spring.toISOString(),fallLeadingEdge:leading.toISOString(),fallPeakStart:peakStart.toISOString(),fallMidpoint:mid.toISOString(),fallPeakEnd:peakEnd.toISOString(),fallTrailingEnd:trailing.toISOString()},
-    habitatAction:fallbackHabitat(phase)
+    model:{score:null,confidence:null,phase,quality:'source-unavailable',
+      scoreUnavailableReason:'Live context is unavailable; no numerical pulse or confidence score can be verified.',
+      components:{liveObservations:null,historicalTiming:null,flightConditions:null,freshness:null},
+      observationTrend:'unavailable',label:'Migration Pulse'},
+    timing,habitatAction:fallbackHabitat(phase)
   };
 }
 
@@ -271,37 +278,73 @@ async function useLocation(lat,lng,label='Your location'){
 }
 
 function renderContext(d,label){
-  const m=d.model||{}, obs=d.observationSummary||{}, w=d.weather||{};
-  $('#pulseValue').textContent=m.score??'—';
-  let pulseNote=pulseWords(m.score||0);
-  try{
-    const prior=JSON.parse(localStorage.getItem('monarch-last-readout')||'null');
-    if(prior && Math.abs(prior.lat-d.location.lat)<0.08 && Math.abs(prior.lng-d.location.lng)<0.08 && Number.isFinite(prior.score)){
-      const delta=(m.score??0)-prior.score;
-      if(Math.abs(delta)>=2) pulseNote+=` · ${delta>0?'↑':'↓'} ${Math.abs(delta)} since last visit`;
-      else pulseNote+=' · about steady since last visit';
-    }
-    localStorage.setItem('monarch-last-readout',JSON.stringify({lat:d.location.lat,lng:d.location.lng,score:m.score,at:d.generatedAt}));
-  }catch{}
-  $('#pulseWords').textContent=pulseNote;
-  $('#phaseValue').textContent=phaseText(m.phase); $('#timingValue').textContent=`Fall peak: ${fmtDate(d.timing?.fallPeakStart)}–${fmtDate(d.timing?.fallPeakEnd)}`;
-  $('#sightValue').textContent=obs.recent7dRecords==null?'—':`${obs.recent7dRecords} records`; $('#sightTrend').textContent=`7-day trend: ${m.observationTrend||'—'} · records ≠ butterfly count`;
-  $('#flightValue').textContent=flightWords(m.components?.flightConditions||0); $('#weatherValue').textContent=w.temperatureF==null?'Weather source degraded':`${w.temperatureF}°F · ${w.windDirection||'—'} ${w.windSpeedMph||0} mph · ${w.shortForecast||''}`;
-  $('#confidenceValue').textContent=m.confidence??'—'; $('#confidenceWords').textContent=(m.confidence>=75?'Good source coverage':m.confidence>=50?'Moderate source coverage':'Sparse or degraded data');
-  $('#habitatAction').textContent=d.habitatAction||'Use locally native milkweed and nectar plants appropriate to your region.';
-  const phase=phaseText(m.phase); const trend=m.observationTrend||'steady';
-  let sentence=`At ${label}, the local signal is ${pulseWords(m.score||0).toLowerCase()}. `;
-  if(m.phase==='fall-migration') sentence+=`You are inside the historical fall migration window, and recent observation reporting is ${trend}.`;
-  else if(m.phase==='spring-arrival') sentence+=`You are near the historical spring arrival period; recent reports help tell whether this year's front is early or late.`;
-  else if(m.phase==='pre-migration') sentence+=`The fall wave is approaching; the historical peak is ${fmtDate(d.timing?.fallPeakStart)}–${fmtDate(d.timing?.fallPeakEnd)}.`;
-  else sentence+=`The current seasonal phase is ${phase}.`;
+  const m=d.model||{},obs=d.observationSummary||{},w=d.weather||{};
+  const west=d.population==='west',hasScore=Number.isFinite(m.score),hasConfidence=Number.isFinite(m.confidence);
+  $('#pulseLabel').textContent=west?'Western migration':'Migration Pulse';
+  $('#flightLabel').textContent=west?'Grove weather':'Flight conditions';
+  $('#confidenceLabel').textContent=west?'Count verification':'Data coverage';
+  $('#pulseValue').textContent=hasScore?m.score:'—';
+  $('#pulseUnit').style.display=hasScore?'':'none';
+  $('#confidenceUnit').style.display=hasConfidence?'':'none';
+  $('#confidenceValue').textContent=hasConfidence?m.confidence:'—';
+  let note=west?'No eastern-style score; check official counts':
+    hasScore?pulseWords(m.score):'Score unavailable — live source incomplete';
+  if(hasScore){
+    try{
+      const prior=JSON.parse(localStorage.getItem('monarch-last-readout')||'null');
+      if(prior && Math.abs(prior.lat-d.location.lat)<0.08 && Math.abs(prior.lng-d.location.lng)<0.08 && Number.isFinite(prior.score)){
+        const delta=m.score-prior.score;
+        note+=Math.abs(delta)>=2?` · ${delta>0?'↑':'↓'} ${Math.abs(delta)} vs last visit`:' · approximately steady vs last visit';
+      }
+      localStorage.setItem('monarch-last-readout',JSON.stringify({lat:d.location.lat,lng:d.location.lng,score:m.score,at:d.generatedAt}));
+    }catch{}
+  }
+  $('#pulseWords').textContent=note;
+  $('#phaseValue').textContent=phaseText(m.phase);
+  $('#timingValue').textContent=west?
+    'Western winter sites: arrivals usually mid-Oct; peak Nov–Jan'
+    :d.timing?.fallPeakStart&&d.timing?.fallPeakEnd?`Typical fall peak: ${fmtDate(d.timing.fallPeakStart)}–${fmtDate(d.timing.fallPeakEnd)}`:'Historical fall timing unavailable';
+  $('#sightValue').textContent=Number.isFinite(obs.recent7dRecords)?`${obs.recent7dRecords} records`:'—';
+  const trendMessages={
+    'no-reports':'No sightings reported in either week; absence is not established',
+    'new-reports':'Reports this week, none in prior week',
+    'rising':'More observation records than prior week',
+    'falling':'Fewer observation records than prior week',
+    'steady':'Similar reporting to prior week',
+    'unavailable':'Recent observations unavailable'
+  };
+  $('#sightTrend').textContent=`${trendMessages[m.observationTrend]||'Trend not established'} · ${west?'Not a sanctuary count':'~50 km search half-width'}`;
+  if(west){
+    $('#flightValue').textContent=w.temperatureF==null?'Unavailable':'Local forecast';
+  }else{
+    $('#flightValue').textContent=Number.isFinite(m.components?.flightConditions)?flightWords(m.components.flightConditions):'Unavailable';
+  }
+  $('#weatherValue').textContent=w.temperatureF==null?'Weather source unavailable':
+    `${w.temperatureF}°F · ${w.windDirection||'wind unknown'} ${Number.isFinite(w.windSpeedMph)?w.windSpeedMph:'—'} mph · ${w.shortForecast||''}`;
+  $('#confidenceWords').textContent=west?'On-site presence requires dated sanctuary monitoring':
+    !hasConfidence?'Incomplete live-source coverage':
+    m.confidence>=75?'Stronger observation coverage (heuristic)':m.confidence>=50?'Limited observation coverage (heuristic)':'Sparse reporting; not a statistical probability';
+  $('#habitatAction').textContent=d.habitatAction||'Use native nectar and host plants suited to your location.';
+  const phase=phaseText(m.phase);
+  let sentence='';
+  if(west){
+    sentence=`${label} follows the western monarch seasonal cycle (${phase}), not the eastern north-to-south timing model. Local sightings and weather do not confirm that butterflies are inside an overwintering grove; check the dated official monitoring panel below.`;
+  }else if(!hasScore){
+    sentence=`The live migration score for ${label} is unavailable because an observation or weather source could not be verified. The ${phase} phase is historical context only—not evidence that butterflies are present today.`;
+  }else{
+    sentence=`At ${label}, the modeled eastern migration signal is ${pulseWords(m.score).toLowerCase()}. `;
+    if(m.phase==='fall-migration')sentence+=`This is the historical fall migration window. ${trendMessages[m.observationTrend]||'Recent observations are uncertain'}.`;
+    else if(m.phase==='spring-arrival')sentence+='This is near the typical spring arrival period; observation coverage may be sparse.';
+    else if(m.phase==='pre-migration')sentence+=`The historical fall peak is ${fmtDate(d.timing?.fallPeakStart)}–${fmtDate(d.timing?.fallPeakEnd)}.`;
+    else sentence+=`The seasonal phase is ${phase}. `;
+    sentence+='Records are not counts of individual butterflies.';
+  }
   $('#decisionSentence').textContent=sentence;
-  $('#locationStatus').textContent=d.fallback
-    ? `${label} · historical timing fallback · live local feeds unavailable`
-    : `${label} · ${d.population==='west'?'Western':'Eastern'} migration model · updated ${new Date(d.generatedAt).toLocaleTimeString([],{hour:'numeric',minute:'2-digit'})}`;
-  if(d.fallback) $('#freshnessTop').textContent='Live local feeds unavailable · timing model shown';
-  else if(d.sourceState?.weather==='degraded'||d.sourceState?.observations==='degraded') $('#freshnessTop').textContent='Local readout has a degraded source';
-  if(window.gtag)gtag('event','monarch_location_readout',{method:label==='Your location'?'device':'zip',population:d.population,phase:m.phase});
+  $('#locationStatus').textContent=d.fallback?`${label} · historical context only · live feeds unavailable`:
+    `${label} · ${west?'Western seasonal':'Eastern migration'} readout · checked ${new Date(d.generatedAt).toLocaleTimeString([],{hour:'numeric',minute:'2-digit'})}`;
+  if(d.fallback)$('#freshnessTop').textContent='Live local feeds unavailable; no migration score';
+  else if(d.sourceState?.weather==='degraded'||d.sourceState?.observations==='degraded')$('#freshnessTop').textContent='Local readout has unavailable source(s)';
+  if(window.gtag)gtag('event','monarch_location_readout',{method:label==='Your location'?'device':'location-page-or-zip',population:d.population,phase:m.phase,quality:m.quality||'unknown'});
 }
 
 function renderHistory(d){
