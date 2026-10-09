@@ -48,6 +48,9 @@ async function nwsWeather(lat, lng) {
 }
 
 function habitatAction(phase) {
+  if (phase === 'western-arrival' || phase === 'western-overwintering') return 'Near coastal overwintering groves, prioritize pesticide-free native nectar plants and intact sheltered roost habitat. Avoid planting tropical milkweed near winter sites.';
+  if (phase === 'western-departure') return 'Western monarchs typically leave coastal groves in February–March; support native nectar availability and inland native milkweed habitats.';
+  if (phase.startsWith('western-')) return 'Support locally native milkweeds in appropriate breeding habitat and pesticide-free nectar plants along western migration corridors.';
   if (phase === 'pre-arrival' || phase === 'spring-arrival') return 'Prioritize native milkweed establishment and early-to-midseason nectar continuity before breeding activity builds.';
   if (phase === 'breeding-season') return 'Keep native milkweed and pesticide-free nectar resources available; avoid cutting all milkweed at once.';
   if (phase === 'pre-migration' || phase === 'fall-migration') return 'Prioritize abundant late-blooming native nectar sources. Migrants need refueling habitat more than new milkweed establishment now.';
