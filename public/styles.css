@@ -10,3 +10,19 @@
 @media(max-width:600px){.sitebar-meta{display:none}.hero-inner{padding-top:38px}.hero h1{font-size:56px}.hero-butterfly{display:none}.decision-strip{margin:-14px 12px 0}.decision-grid{grid-template-columns:1fr 1fr}.metric{padding:17px 10px}.metric:first-child{padding-left:10px}.metric-value{font-size:38px}.metric-value.text{font-size:19px}.map-section,.section-pad{padding-left:14px;padding-right:14px;padding-top:58px}.map-frame{height:520px;border-radius:10px}.map-legend{left:10px;right:auto;bottom:10px;max-width:235px}.map-foot{display:grid;gap:4px}.story-card{padding:24px}.habitat-steps{grid-template-columns:1fr}.explain-grid{grid-template-columns:1fr 1fr;gap:8px}.source-row{grid-template-columns:82px 1fr}.source-row span:nth-child(3),.source-row span:last-child{display:none}.population-number{font-size:50px}footer{flex-direction:column}.location-shell{align-items:stretch}.or{display:none}.primary-button{width:100%}.zip-form{width:100%}.zip-form input{flex:1;width:auto}}
 @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}}
 .education{padding-top:88px}.education-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}.education-grid article{background:#142822;color:#f6f0e5;padding:25px;border-radius:11px;min-height:220px;position:relative;overflow:hidden}.education-grid article:after{content:"";position:absolute;width:110px;height:110px;border:1px solid rgba(239,141,51,.18);border-radius:50%;right:-45px;top:-45px}.education-grid span{font-size:10px;font-weight:900;letter-spacing:.15em;color:#e99a59}.education-grid h3{font-family:Georgia,serif;font-size:22px;font-weight:500;margin:18px 0 10px}.education-grid p{color:#c2cdc7;font-size:12px;line-height:1.6;margin:0}@media(max-width:950px){.education-grid{grid-template-columns:repeat(2,1fr)}}@media(max-width:600px){.education-grid{grid-template-columns:1fr}}
+
+
+/* Distinguish source-dated western sanctuary counts from live sightings and model scores. */
+.official-monitoring{margin-top:28px;border-top:1px solid var(--line);padding-top:27px}
+.official-monitoring-heading h3{font:500 clamp(26px,3vw,38px)/1.15 Georgia,serif;letter-spacing:-.025em;margin:7px 0 10px}
+.official-monitoring-heading p{max-width:850px;color:var(--muted);line-height:1.55;margin:0 0 17px}
+.western-monitoring-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.western-monitoring-card{background:var(--paper);box-shadow:var(--shadow);border:1px solid var(--line);border-top:4px solid #74669a;border-radius:12px;padding:22px;min-width:0}
+.western-monitoring-card h4{font-size:20px;line-height:1.24;margin:0 0 11px}
+.western-monitoring-card .western-status{display:inline-block;font-weight:800;font-size:12px;color:#4b3674;background:#e9e2f3;border-radius:40px;padding:7px 11px}
+.western-monitoring-card p{line-height:1.5;font-size:14px;color:#485950;margin:11px 0 0}
+.western-monitoring-card a{color:#245f74;text-decoration:underline;text-underline-offset:2px;overflow-wrap:anywhere}
+.western-old-count{border-top:1px solid var(--line);padding-top:12px}
+.official-monitoring-foot{font-size:12px;color:var(--muted);line-height:1.55}
+.western-count-reported{background:#dff0e4!important;color:#21583c!important}
+@media(max-width:720px){.western-monitoring-grid{grid-template-columns:1fr}.western-monitoring-card{padding:18px}.official-monitoring{margin-top:22px}}
