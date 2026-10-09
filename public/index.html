@@ -14,7 +14,7 @@
   <meta name="twitter:card" content="summary" />
   <link rel="preconnect" href="https://unpkg.com" crossorigin />
   <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@5.7.1/dist/maplibre-gl.css" />
-  <link rel="stylesheet" href="/national-tools/monarch-migration-live/styles.css?v=20261009-1" />
+  <link rel="stylesheet" href="/national-tools/monarch-migration-live/styles.css?v=20261009-2" />
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-Y5D2V2W7HN"></script>
   <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config','G-Y5D2V2W7HN',{anonymize_ip:true});</script>
   <script type="application/ld+json">
@@ -112,6 +112,27 @@
       <div id="mapLoading" class="map-loading">Loading recent monarch observations…</div>
     </div>
     <div class="map-foot"><span id="mapCount">—</span><span>California sanctuary markers are locations, not live sanctuary counts.</span><a href="https://www.inaturalist.org" target="_blank" rel="noopener">iNaturalist source ↗</a></div>
+    <section class="official-monitoring" aria-labelledby="western-monitoring-title">
+      <div class="official-monitoring-heading">
+        <div><span class="kicker">OFFICIAL MONITORING · WESTERN OVERWINTERING</span>
+          <h3 id="western-monitoring-title">How many monarchs are at the California groves?</h3>
+          <p>Actual sanctuary counts come from site monitoring, not the migration model or orange observation dots. Counts are survey snapshots, never live butterfly totals.</p>
+        </div>
+      </div>
+      <div class="western-monitoring-grid" id="westernMonitoringCards" aria-live="polite">
+        <article class="western-monitoring-card" data-site="pacific-grove-ca">
+          <h4>Pacific Grove Monarch Sanctuary</h4><span class="western-status">Current-season count not verified</span>
+          <p>Official museum monitoring: <a href="https://www.pgmuseum.org/monarchs" target="_blank" rel="noopener">check latest dated sanctuary report</a>.</p>
+          <p class="western-old-count">Last published 2025 mid-season survey: <strong>188 monarchs</strong> (late Nov–early Dec 2025). <a href="https://www.xerces.org/press/western-monarch-numbers-remain-at-historic-low" target="_blank" rel="noopener">Xerces Society</a>, published Jan 29, 2026. Not today's count.</p>
+        </article>
+        <article class="western-monitoring-card" data-site="pismo-beach-ca">
+          <h4>Pismo State Beach Butterfly Grove</h4><span class="western-status">Current-season count not verified</span>
+          <p>California State Parks <a href="https://www.parks.ca.gov/?page_id=30273" target="_blank" rel="noopener">provides grove viewing-season information</a>, not a daily count.</p>
+          <p class="western-old-count">Last published 2025 mid-season survey: <strong>471 monarchs</strong> (late Nov–early Dec 2025). <a href="https://www.xerces.org/press/western-monarch-numbers-remain-at-historic-low" target="_blank" rel="noopener">Xerces Society</a>, published Jan 29, 2026. Not today's count.</p>
+        </article>
+      </div>
+      <p class="official-monitoring-foot" id="westernMonitoringStatus">Checking the Pacific Grove Museum for a newer dated sanctuary report. Latest Xerces site surveys are shown separately.</p>
+    </section>
   </section>
 
   <section class="story-grid section-pad">
@@ -181,5 +202,5 @@
 <footer><strong>Monarch Migration Live</strong><span>Decision intelligence, not a wildlife census.</span><a href="https://chrisizworski.com/national-tools/">More National Outdoor Tools</a></footer>
 
 <script src="https://unpkg.com/maplibre-gl@5.7.1/dist/maplibre-gl.js"></script>
-<script type="module" src="/national-tools/monarch-migration-live/app.js?v=20261009-1"></script>
+<script type="module" src="/national-tools/monarch-migration-live/app.js?v=20261009-2"></script>
 </body></html>

@@ -51,6 +51,7 @@ jobs:
           probe "app.js" "$BASE/app.js?smoke=${GITHUB_SHA}" js
           probe "ping api" "$BASE/api/ping?smoke=${GITHUB_SHA}" json
           probe "status api" "$BASE/api/status?smoke=${GITHUB_SHA}" json
+          probe "official monarch sites" "$BASE/api/overwintering?smoke=${GITHUB_SHA}" json
           probe "context api" "$BASE/api/context?lat=43.6&lng=-83.9&smoke=${GITHUB_SHA}" json
 
           for slug in chicago-il peninsula-point-mi south-bass-island-oh cape-may-nj austin-tx san-antonio-tx pacific-grove-ca pismo-beach-ca; do
