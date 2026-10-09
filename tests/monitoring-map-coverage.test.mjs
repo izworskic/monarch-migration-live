@@ -39,5 +39,5 @@ test('user-facing map identifies western sites as context, not official counts',
   assert.match(parent,/not live counts/);
   assert.match(parent,/eastern migration only/);
   assert.match(parent,/California sanctuary markers are locations/);
-  assert.match(parent,/v=20261009-1/);
+  assert.match(parent,/v=20261009-2/);
 });
