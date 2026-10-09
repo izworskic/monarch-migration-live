@@ -14,7 +14,7 @@
   <meta name="twitter:card" content="summary" />
   <link rel="preconnect" href="https://unpkg.com" crossorigin />
   <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@5.7.1/dist/maplibre-gl.css" />
-  <link rel="stylesheet" href="/national-tools/monarch-migration-live/styles.css?v=20261009-2" />
+  <link rel="stylesheet" href="/national-tools/monarch-migration-live/styles.css?v=20261009-3" />
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-Y5D2V2W7HN"></script>
   <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config','G-Y5D2V2W7HN',{anonymize_ip:true});</script>
   <script type="application/ld+json">
@@ -79,14 +79,14 @@
     </div>
     <div class="decision-grid">
       <article class="metric feature">
-        <span class="metric-label">Migration Pulse <button class="info" data-tip="A modeled 0–100 index of local migration activity and flight opportunity. It is not a butterfly count.">?</button></span>
-        <div class="metric-value"><span id="pulseValue">—</span><small>/100</small></div>
+        <span class="metric-label"><span id="pulseLabel">Migration Pulse</span> <button class="info" data-tip="A modeled 0–100 index of local migration activity and flight opportunity. It is not a butterfly count.">?</button></span>
+        <div class="metric-value"><span id="pulseValue">—</span><small id="pulseUnit">/100</small></div>
         <div id="pulseWords" class="metric-note">Waiting for location</div>
       </article>
       <article class="metric"><span class="metric-label">Season phase</span><div id="phaseValue" class="metric-value text">—</div><div id="timingValue" class="metric-note">Historical timing baseline</div></article>
       <article class="metric"><span class="metric-label">Recent observations</span><div id="sightValue" class="metric-value text">—</div><div id="sightTrend" class="metric-note">Licensed iNaturalist records, not butterflies counted</div></article>
-      <article class="metric"><span class="metric-label">Flight conditions</span><div id="flightValue" class="metric-value text">—</div><div id="weatherValue" class="metric-note">NWS forecast</div></article>
-      <article class="metric"><span class="metric-label">Confidence</span><div class="metric-value"><span id="confidenceValue">—</span><small>%</small></div><div id="confidenceWords" class="metric-note">Source coverage + observation density</div></article>
+      <article class="metric"><span class="metric-label" id="flightLabel">Flight conditions</span><div id="flightValue" class="metric-value text">—</div><div id="weatherValue" class="metric-note">NWS forecast</div></article>
+      <article class="metric"><span class="metric-label" id="confidenceLabel">Data coverage</span><div class="metric-value"><span id="confidenceValue">—</span><small id="confidenceUnit">%</small></div><div id="confidenceWords" class="metric-note">Source coverage + observation density</div></article>
     </div>
     <p id="decisionSentence" class="decision-sentence">Choose a location to answer the useful question: <strong>are monarchs moving through here now, and when should I watch?</strong></p>
   </section>
@@ -202,5 +202,5 @@
 <footer><strong>Monarch Migration Live</strong><span>Decision intelligence, not a wildlife census.</span><a href="https://chrisizworski.com/national-tools/">More National Outdoor Tools</a></footer>
 
 <script src="https://unpkg.com/maplibre-gl@5.7.1/dist/maplibre-gl.js"></script>
-<script type="module" src="/national-tools/monarch-migration-live/app.js?v=20261009-2"></script>
+<script type="module" src="/national-tools/monarch-migration-live/app.js?v=20261009-3"></script>
 </body></html>
