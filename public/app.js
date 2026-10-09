@@ -11,7 +11,9 @@ const GREAT_LAKES = [
   {name:'South Bass Island, Ohio',lat:41.64,lng:-82.84,note:'Great Lakes crossing and roost context documented by observers.'}
 ];
 const WESTERN = [
-  {name:'Pacific Grove, California',lat:36.621,lng:-121.918},{name:'Pismo Beach, California',lat:35.121,lng:-120.626},{name:'Santa Cruz region, California',lat:36.974,lng:-122.03}
+  {name:'Pacific Grove, California',lat:36.621,lng:-121.918,slug:'pacific-grove-ca',note:'Historic winter monarch sanctuary. Marker is not a live count.'},
+  {name:'Pismo Beach, California',lat:35.121,lng:-120.626,slug:'pismo-beach-ca',note:'Historic winter butterfly grove. Marker is not a live count.'},
+  {name:'Santa Cruz region, California',lat:36.974,lng:-122.03,note:'Western overwintering region. Marker is not evidence of current occupancy.'}
 ];
 
 function api(path){ return `${BASE}${path}`; }
@@ -59,6 +61,18 @@ function timingGeoJSON(){
 
 function pointCollection(rows, kind){return {type:'FeatureCollection',features:rows.map(r=>({type:'Feature',properties:{...r,kind},geometry:{type:'Point',coordinates:[r.lng,r.lat]}}))};}
 
+// Keep Pacific Grove and Pismo Beach visible in the default continental view,
+// including narrow mobile viewports. Location pages switch to their site after load.
+const CONTINENTAL_BOUNDS=[[-124.8,24.0],[-66.5,49.8]];
+function focusSelectedOnMap({animate=true}={}){
+  const map=state.map, loc=state.selected;
+  if(!map?.isStyleLoaded()||!loc||!map.getSource('selected'))return false;
+  map.getSource('selected').setData(pointCollection([loc],'Selected location'));
+  const target={center:[loc.lng,loc.lat],zoom:6.2,essential:animate};
+  if(animate)map.flyTo(target);else map.jumpTo(target);
+  return true;
+}
+
 async function initMap(){
   if(!window.maplibregl){$('#mapLoading').textContent='Map library failed to load.';return;}
   const map=new maplibregl.Map({container:'map',style:'https://tiles.openfreemap.org/styles/liberty',center:[-96.3,39.4],zoom:3.2,minZoom:2,maxZoom:14,attributionControl:true});
@@ -84,6 +98,9 @@ async function initMap(){
     map.on('click','greatlakes-circles',e=>showContextPopup(e.features?.[0]));
     map.on('click','west-circles',e=>showContextPopup(e.features?.[0]));
     ['recent-clusters','recent-points','greatlakes-circles','west-circles'].forEach(id=>{map.on('mouseenter',id,()=>map.getCanvas().style.cursor='pointer');map.on('mouseleave',id,()=>map.getCanvas().style.cursor='');});
+    if(!focusSelectedOnMap({animate:false})){
+      map.fitBounds(CONTINENTAL_BOUNDS,{padding:{top:30,bottom:42,left:30,right:30},duration:0,maxZoom:3.5});
+    }
     await loadRecent();
   });
 }
@@ -95,19 +112,46 @@ function showPopup(feature){
 }
 function showContextPopup(feature){
   if(!feature)return; const p=feature.properties||{}; const c=feature.geometry.coordinates;
-  const html=`<div class="popup-type">${safe(p.kind||'CONTEXT')}</div><div class="popup-place">${safe(p.name||'Migration context')}</div><div class="popup-meta">${safe(p.note||'Known migration / overwintering context. Not a claim of live monarch presence.')}</div>`;
+  const guide=p.slug?`<div class="popup-meta" style="margin-top:8px"><a href="${BASE}/${encodeURIComponent(p.slug)}">Open local viewing guide →</a></div>`:'';
+  const html=`<div class="popup-type">${safe(p.kind||'CONTEXT')}</div><div class="popup-place">${safe(p.name||'Migration context')}</div><div class="popup-meta">${safe(p.note||'Known migration / overwintering context. Not a claim of live monarch presence.')}</div>${guide}`;
   new maplibregl.Popup({offset:10}).setLngLat(c).setHTML(html).addTo(state.map);
 }
 
 async function loadRecent(){
-  try{
-    const u=new URL(api('/api/sightings'),location.origin); Object.entries({days:14,limit:200,nelat:51,nelng:-65,swlat:24,swlng:-125}).forEach(([k,v])=>u.searchParams.set(k,v));
-    const r=await fetch(u); const d=await readJsonResponse(r,'Sightings');
-    const features=(d.results||[]).map(x=>({type:'Feature',properties:{id:x.id,observedOn:x.observedOn,place:x.place||'',license:x.license,url:x.url},geometry:{type:'Point',coordinates:[x.lng,x.lat]}}));
-    state.map?.getSource('recent')?.setData({type:'FeatureCollection',features});
-    $('#mapCount').textContent=`${features.length.toLocaleString()} recent licensed records shown`;
-    $('#mapLoading').style.display='none'; $('#freshnessTop').textContent=`Sightings fetched ${new Date(d.fetchedAt).toLocaleTimeString([],{hour:'numeric',minute:'2-digit'})}`;
-  }catch{$('#mapLoading').textContent='Recent sightings are temporarily unavailable. Timing and context layers remain available.';$('#freshnessTop').textContent='One live source degraded';}
+  // A single nationwide 200-record cap can hide California observations.
+  // The separate western sample does not claim to be an exhaustive census.
+  const queries=[
+    {label:'national',bbox:{nelat:51,nelng:-65,swlat:24,swlng:-125}},
+    {label:'western',bbox:{nelat:51,nelng:-105,swlat:24,swlng:-125}}
+  ];
+  const requests=queries.map(async sample=>{
+    const u=new URL(api('/api/sightings'),location.origin);
+    Object.entries({days:14,limit:200,...sample.bbox}).forEach(([k,v])=>u.searchParams.set(k,v));
+    const r=await fetch(u);
+    return readJsonResponse(r,'Sightings: '+sample.label);
+  });
+  const outcome=await Promise.allSettled(requests);
+  const good=outcome.filter(x=>x.status==='fulfilled').map(x=>x.value);
+  if(!good.length){
+    $('#mapLoading').textContent='Recent sightings are temporarily unavailable. Timing and context layers remain available.';
+    $('#freshnessTop').textContent='Observation source degraded';
+    return;
+  }
+  const byId=new Map();
+  for(const data of good)for(const row of data.results||[]){
+    if(row.id!=null && Number.isFinite(Number(row.lat)) && Number.isFinite(Number(row.lng)))
+      byId.set(String(row.id),row);
+  }
+  const features=[...byId.values()].map(x=>({
+    type:'Feature',
+    properties:{id:x.id,observedOn:x.observedOn,place:x.place||'',license:x.license,url:x.url},
+    geometry:{type:'Point',coordinates:[x.lng,x.lat]}
+  }));
+  state.map?.getSource('recent')?.setData({type:'FeatureCollection',features});
+  const degraded=good.length!==queries.length;
+  $('#mapCount').textContent=`${features.length.toLocaleString()} sampled licensed sightings (national + western coverage); not a complete count`;
+  $('#mapLoading').style.display='none';
+  $('#freshnessTop').textContent=degraded?'Western or national observation sample unavailable':`Sightings fetched ${new Date(good[0].fetchedAt).toLocaleTimeString([],{hour:'numeric',minute:'2-digit'})}`;
 }
 
 function setLayer(name,visible){
@@ -166,10 +210,8 @@ async function useLocation(lat,lng,label='Your location'){
   state.selected={lat,lng,label};
   $('#locationStatus').textContent=`Loading local migration intelligence for ${label}…`;
   $('#readoutPlace').textContent=label;
-  if(state.map?.isStyleLoaded()){
-    state.map.getSource('selected')?.setData(pointCollection([{lat,lng,name:label}],'Selected location'));
-    state.map.flyTo({center:[lng,lat],zoom:6.2,essential:true});
-  }
+  // If map style has not loaded, initMap() applies this selected location on load.
+  focusSelectedOnMap();
   const [contextResult,historyResult]=await Promise.allSettled([
     fetch(`${api('/api/context')}?lat=${encodeURIComponent(lat)}&lng=${encodeURIComponent(lng)}`).then(r=>readJsonResponse(r,'Local migration context')),
     fetch(`${api('/api/history')}?lat=${encodeURIComponent(lat)}&lng=${encodeURIComponent(lng)}&radius=2.5`).then(r=>readJsonResponse(r,'Historical context'))
