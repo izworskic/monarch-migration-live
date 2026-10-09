@@ -14,6 +14,43 @@ const locations=[
   {slug:'pismo-beach-ca',name:'Pismo Beach, California',short:'Pismo Beach',lat:35.121,lng:-120.626,title:'Pismo Beach Monarch Butterflies Today | Live Conditions & Timing',description:'Check monarch butterfly conditions near Pismo Beach with recent sightings, local weather, seasonal timing and western overwintering context.',intro:'Pismo State Beach is a major publicly accessible western monarch overwintering site, where sheltered coastal microclimate and seasonal arrival determine the viewing experience.',why:'The live page complements official grove counts rather than replacing them, showing nearby licensed observations, current weather, seasonal context and historical occurrence records.'}
 ];
 
+
+const pilotGuides={
+  'pacific-grove-ca':{
+    title:'Pacific Grove Monarch Butterflies: Season, Sanctuary Count & Viewing Tips',
+    description:'Are monarchs at Pacific Grove yet? Check the official sanctuary status, typical arrival season, best viewing hours and local migration context before you go.',
+    question:'Are monarch butterflies at Pacific Grove right now?',
+    answer:'Nearby monarch sightings are not a sanctuary count. Before traveling, check the Pacific Grove Museum’s latest dated sanctuary update to confirm whether overwintering butterflies have arrived.',
+    timing:'Butterflies typically begin arriving in mid-October. Peak sanctuary viewing is usually November through January; they generally depart in February.',
+    tip:'To see roosting clusters, try before 11 a.m. or cool, overcast conditions. On warmer sunny days, look for flight later in the day.',
+    visit:'Monarch Sanctuary, 250 Ridge Road. Sunrise to sunset, free admission, accessible gravel path. No pets permitted.',
+    sourceName:'Pacific Grove Museum — official monarch sanctuary status and counts',
+    sourceUrl:'https://www.pgmuseum.org/monarchs'
+  },
+  'pismo-beach-ca':{
+    title:'Pismo Beach Monarch Butterfly Grove: Season, Counts & Visiting Tips',
+    description:'Check when monarch butterflies visit the Pismo Beach grove, where to go and what official counts can establish before planning a winter viewing trip.',
+    question:'Are monarchs at Pismo Beach Butterfly Grove yet?',
+    answer:'Monarchs at nearby locations do not establish occupancy of the overwintering grove. California State Parks lists November through February as the usual grove season; consult the official visitor page before traveling.',
+    timing:'Typical overwintering period: November through February. October is normally before the grove viewing season, so a fall migration score is not a confirmed grove count.',
+    tip:'Visit during the seasonal window, then use local weather to decide whether to look for resting clusters or flying butterflies. Counts and viewing conditions change.',
+    visit:'445 South Dolliver Street, off Highway 1. Free entry, generally open sunrise to sunset; weather can affect access. Use designated parking.',
+    sourceName:'California State Parks — Pismo State Beach Butterfly Grove',
+    sourceUrl:'https://parks.ca.gov/?page_id=30273'
+  },
+  'cape-may-nj':{
+    title:'Cape May Monarch Migration: When to Go, Recent Monitoring & Viewing',
+    description:'Are monarchs passing through Cape May? Check the autumn monitoring season, official project reports, local flight conditions and where to look.',
+    question:'Are monarch butterflies migrating through Cape May now?',
+    answer:'Cape May is an autumn migration stopover, not a western-style overwintering sanctuary. The Cape May Monarch Monitoring Project follows passage in September and October, with monitoring extending into November.',
+    timing:'September and October are key migration months. Daily passage and roosting opportunities fluctuate; a regional observation signal is not a guaranteed local gathering.',
+    tip:'Compare the official Cape May monitoring information with recent local observations and wind conditions before setting out. After weather fronts, activity may change rapidly.',
+    visit:'Cape May Point State Park and the surrounding Cape May Point area offer migration-viewing opportunities. Check current park access and scheduled programs.',
+    sourceName:'New Jersey Audubon — Cape May Monarch Monitoring Project',
+    sourceUrl:'https://njaudubon.org/monarch-monitoring/'
+  }
+};
+
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const json=v=>JSON.stringify(v).replace(/</g,'\\u003c');
 let source=fs.readFileSync(parentPath,'utf8');
@@ -21,6 +58,8 @@ source=source.replace(/\n?<section[^>]*data-location-directory[\s\S]*?<\/section
 if(!source.includes('<title>')||!source.includes('rel="canonical"')||!source.includes('id="main"')) throw new Error('Monarch parent SEO shell not found');
 
 for(const loc of locations){
+  const guide=pilotGuides[loc.slug]||null;
+  if(guide){loc.title=guide.title;loc.description=guide.description;}
   const canonical=`https://chrisizworski.com/national-tools/monarch-migration-live/${loc.slug}`;
   const faq=[
     {q:`Are monarchs migrating through ${loc.short} today?`,a:`The live readout combines recent licensed monarch observations near ${loc.short}, the historical seasonal migration window and current flight weather. The Migration Pulse is a planning index, not a butterfly count.`},
@@ -49,6 +88,31 @@ for(const loc of locations){
   const siblings=locations.filter(x=>x.slug!==loc.slug).slice(0,6).map(x=>`<a href="/national-tools/monarch-migration-live/${x.slug}">${esc(x.short)}</a>`).join(' · ');
   const panel=`\n  <section class="section-pad" data-seo-location="${esc(loc.slug)}"><div class="story-card" style="max-width:1180px;margin:0 auto"><span class="kicker">LOCAL MIGRATION DECISION</span><h2>${esc(loc.name)} monarch migration</h2><p>${esc(loc.intro)}</p><p>${esc(loc.why)}</p><p class="fine">Nearby migration pages: ${siblings}</p><p><a class="text-link" href="/national-tools/monarch-migration-live">Check another location →</a></p></div></section>\n`;
   h=h.replace(/(<section class="decision-strip")/i,`${panel}$1`);
+  if(guide){
+    const visitorPanel=`
+  <section class="section-pad" data-monarch-experiment="visitor-intent-v1" data-location="${esc(loc.slug)}" aria-labelledby="monarch-visitor-title"><div class="story-card" style="max-width:1180px;margin:0 auto">
+  <span class="kicker">VISITOR DECISION GUIDE · ${esc(loc.name)}</span>
+  <h2 id="monarch-visitor-title">${esc(guide.question)}</h2>
+  <p><strong>${esc(guide.answer)}</strong></p>
+  <div class="education-grid" style="margin:18px 0">
+    <article><h3>When to visit</h3><p>${esc(guide.timing)}</p></article>
+    <article><h3>What to look for</h3><p>${esc(guide.tip)}</p></article>
+    <article><h3>Plan your visit</h3><p>${esc(guide.visit)}</p></article>
+  </div>
+  <p><a class="text-link" data-monarch-visitor-cta="official-status" href="${esc(guide.sourceUrl)}" rel="noopener" target="_blank">Check official status and monitoring: ${esc(guide.sourceName)} →</a></p>
+  <p class="fine"><strong>Evidence boundary:</strong> The Migration Pulse below is a regional model based on licensed sightings, seasonal timing and weather. It is not an official sanctuary count or a guarantee of butterflies at this location.</p>
+  </div></section>`;
+    h=h.replace(/(<section class="decision-strip")/i,`${visitorPanel}$1`);
+    const tracking=`<script data-monarch-visitor-analytics>
+document.addEventListener('click',function(ev){
+ const a=ev.target.closest('[data-monarch-visitor-cta]');
+ if(!a||typeof window.gtag!=='function')return;
+ window.gtag('event','monarch_visitor_guide_cta',{experiment:'visitor_intent_v1',monarch_location:${json(loc.slug)},destination:'official_monitoring'});
+});
+</script>\n`;
+    h=h.replace('</body>',`${tracking}</body>`);
+  }
+
   const preset=`<script data-location-preset>try{localStorage.setItem('monarch-location',JSON.stringify(${json({lat:loc.lat,lng:loc.lng,label:loc.name})}))}catch{}</script>\n`;
   h=h.replace('<script type="module" src="/national-tools/monarch-migration-live/app.js',`${preset}<script type="module" src="/national-tools/monarch-migration-live/app.js`);
   const out=path.join(root,`public/${loc.slug}/index.html`);
