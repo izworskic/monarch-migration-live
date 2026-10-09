@@ -1,7 +1,7 @@
 const BASE = '/national-tools/monarch-migration-live';
 const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
-const state = { map:null, selected:null, recentVisible:true, timingVisible:true, lakeVisible:true, westVisible:true };
+const state = { map:null, selected:null, recentVisible:true, timingVisible:true, lakeVisible:true, westVisible:true, westernMonitoring:new Map() };
 
 const FALL = [[49,'08-26'],[47,'09-01'],[45,'09-06'],[43,'09-11'],[41,'09-16'],[39,'09-22'],[37,'09-27'],[35,'10-02'],[33,'10-07'],[31,'10-12'],[29,'10-18'],[27,'10-23'],[25,'10-28'],[23,'11-04'],[21,'11-11'],[19.4,'11-18']];
 const SPRING = [[49,'06-07'],[47,'05-30'],[45,'05-22'],[43,'05-14'],[41,'05-06'],[39,'04-28'],[37,'04-14'],[35,'04-02'],[33,'03-27'],[31,'03-22'],[29,'03-18'],[27,'03-15'],[25,'03-13']];
@@ -85,7 +85,8 @@ async function initMap(){
     map.addSource('greatlakes',{type:'geojson',data:pointCollection(GREAT_LAKES,'Great Lakes context')});
     map.addLayer({id:'greatlakes-circles',type:'circle',source:'greatlakes',paint:{'circle-radius':7,'circle-color':'#3e7a8c','circle-stroke-color':'#fff','circle-stroke-width':2}});
     map.addSource('west',{type:'geojson',data:pointCollection(WESTERN,'Western overwintering context')});
-    map.addLayer({id:'west-circles',type:'circle',source:'west',paint:{'circle-radius':7,'circle-color':'#6d5b88','circle-stroke-color':'#fff','circle-stroke-width':2}});
+    map.addLayer({id:'west-circles',type:'circle',source:'west',paint:{'circle-radius':8,'circle-color':'#6d5b88','circle-stroke-color':'#fff','circle-stroke-width':2}});
+    map.addLayer({id:'west-labels',type:'symbol',source:'west',minzoom:2,layout:{'text-field':['coalesce',['get','name'],''],'text-size':11,'text-offset':[0,1.5],'text-anchor':'top','text-max-width':12,'text-optional':true},paint:{'text-color':'#342a52','text-halo-color':'#ffffff','text-halo-width':1.7}});
     map.addSource('recent',{type:'geojson',data:{type:'FeatureCollection',features:[]},cluster:true,clusterRadius:34,clusterMaxZoom:8});
     map.addLayer({id:'recent-clusters',type:'circle',source:'recent',filter:['has','point_count'],paint:{'circle-color':'#e66f1b','circle-radius':['step',['get','point_count'],14,20,20,75,27],'circle-opacity':.9,'circle-stroke-color':'#fff','circle-stroke-width':2}});
     map.addLayer({id:'recent-cluster-count',type:'symbol',source:'recent',filter:['has','point_count'],layout:{'text-field':['get','point_count_abbreviated'],'text-size':11},paint:{'text-color':'#fff'}});
@@ -113,8 +114,56 @@ function showPopup(feature){
 function showContextPopup(feature){
   if(!feature)return; const p=feature.properties||{}; const c=feature.geometry.coordinates;
   const guide=p.slug?`<div class="popup-meta" style="margin-top:8px"><a href="${BASE}/${encodeURIComponent(p.slug)}">Open local viewing guide →</a></div>`:'';
-  const html=`<div class="popup-type">${safe(p.kind||'CONTEXT')}</div><div class="popup-place">${safe(p.name||'Migration context')}</div><div class="popup-meta">${safe(p.note||'Known migration / overwintering context. Not a claim of live monarch presence.')}</div>${guide}`;
+  const site=p.slug?state.westernMonitoring.get(p.slug):null;
+  const current=site?.current?.state==='DATED_COUNT'?`Official dated count: <strong>${Number(site.current.count).toLocaleString()} monarchs</strong> (${safe(displaySurveyDate(site.current.observedOn))})`:'No verified current-season count';
+  const previous=site?.previousSurvey?`Last published 2025 mid-season survey: ${Number(site.previousSurvey.count).toLocaleString()} (not today). `:'';
+  const detail=p.slug?`<div class="popup-meta" style="margin-top:7px">${current}. ${previous}</div>`:'';
+  const html=`<div class="popup-type">${safe(p.kind||'CONTEXT')}</div><div class="popup-place">${safe(p.name||'Migration context')}</div><div class="popup-meta">${safe(p.note||'Known migration / overwintering context. Not a claim of live monarch presence.')}</div>${detail}${guide}`;
   new maplibregl.Popup({offset:10}).setLngLat(c).setHTML(html).addTo(state.map);
+}
+
+function displaySurveyDate(iso){
+  if(!iso||!/\d{4}-\d\d-\d\d/.test(iso))return 'date unavailable';
+  const d=new Date(iso+'T12:00:00Z');
+  return Number.isNaN(d.getTime())?'date unavailable':new Intl.DateTimeFormat('en-US',{month:'short',day:'numeric',year:'numeric',timeZone:'UTC'}).format(d);
+}
+function westernReportText(site){
+  const report=site.officialReport||{};
+  if(site.sourceState==='UNAVAILABLE')return 'The museum report could not be retrieved at this check. The older published survey below is still available.';
+  if(report.state==='STALE_NOT_STARTED_REPORT')return `Museum update ${displaySurveyDate(report.date)}: the season had not begun at that time. This report is older than two weeks, so it does not establish whether monarchs have arrived today.`;
+  if(report.state==='NOT_STARTED_REPORTED')return `Museum update ${displaySurveyDate(report.date)}: the sanctuary season had not begun as of that report. Check again before visiting.`;
+  if(report.state==='COUNT_REPORTED')return `Museum report date: ${displaySurveyDate(report.date)}. Counts describe a monitored survey, not a continuously live census.`;
+  if(report.state==='SEASONAL_REFERENCE')return 'California State Parks publishes the November–February viewing season, but does not provide a verified current grove count in this feed.';
+  return `Official report ${report.date?displaySurveyDate(report.date):'date unconfirmed'}: no current-season count has been verified.`;
+}
+function monitoringCard(site){
+  const current=site.current||{},historical=site.previousSurvey||{};
+  const hasCurrent=current.state==='DATED_COUNT'&&Number.isSafeInteger(current.count)&&current.observedOn;
+  const status=hasCurrent?`Dated official count: ${Number(current.count).toLocaleString()} monarchs · ${displaySurveyDate(current.observedOn)}`:'Current-season count not verified';
+  return `<article class="western-monitoring-card" data-site="${safe(site.id)}">
+      <h4>${safe(site.name)}</h4>
+      <span class="western-status ${hasCurrent?'western-count-reported':''}">${safe(status)}</span>
+      <p>${safe(westernReportText(site))}</p>
+      <p>Source: <a href="${safe(site.officialSource.url)}" rel="noopener" target="_blank">${safe(site.officialSource.name)} — latest monitoring</a>.</p>
+      <p class="western-old-count"><strong>Previous-season reference:</strong> ${Number(historical.count).toLocaleString()} monarchs, ${safe(historical.survey)}, ${safe(historical.observedWindow)}, published ${safe(displaySurveyDate(historical.publishedOn))}. <a rel="noopener" target="_blank" href="${safe(historical.sourceUrl)}">${safe(historical.sourceName)} report</a>. <em>This is not the current count.</em></p>
+    </article>`;
+}
+async function loadOfficialMonitoring(){
+  const el=$('#westernMonitoringCards'),summary=$('#westernMonitoringStatus');
+  if(!el||!summary)return;
+  try{
+    const r=await fetch(api('/api/overwintering'));
+    const data=await readJsonResponse(r,'Official western sanctuary monitoring');
+    if(!Array.isArray(data.sites)||data.sites.length!==2)throw Error('Monitoring source returned unexpected site coverage');
+    state.westernMonitoring=new Map(data.sites.map(s=>[s.id,s]));
+    el.innerHTML=data.sites.map(monitoringCard).join('');
+    const pg=state.westernMonitoring.get('pacific-grove-ca');
+    summary.textContent=pg?.sourceState==='FETCHED'
+      ?'Pacific Grove Museum checked. Site reports and survey years are dated individually; counts are not continuously live.'
+      :'Pacific Grove Museum temporarily unavailable; previously published Xerces survey data remains dated and distinct.';
+  }catch{
+    summary.textContent='Current official monitoring feed unavailable. Historical 2025 survey counts shown above are not current-season counts. Follow the official source links.';
+  }
 }
 
 async function loadRecent(){
@@ -156,7 +205,7 @@ async function loadRecent(){
 
 function setLayer(name,visible){
   if(!state.map?.isStyleLoaded())return;
-  const ids={recent:['recent-clusters','recent-cluster-count','recent-points'],timing:['timing-fill','timing-line'],greatlakes:['greatlakes-circles'],west:['west-circles']}[name]||[];
+  const ids={recent:['recent-clusters','recent-cluster-count','recent-points'],timing:['timing-fill','timing-line'],greatlakes:['greatlakes-circles'],west:['west-circles','west-labels']}[name]||[];
   ids.forEach(id=>state.map.getLayer(id)&&state.map.setLayoutProperty(id,'visibility',visible?'visible':'none'));
 }
 
@@ -287,6 +336,7 @@ $$('.info').forEach(btn=>{btn.addEventListener('click',()=>alert(btn.dataset.tip
 
 async function boot(){
   initBars(); await initMap();
+  loadOfficialMonitoring();
   try{const saved=JSON.parse(localStorage.getItem('monarch-location')||'null');if(saved&&Number.isFinite(saved.lat)&&Number.isFinite(saved.lng))useLocation(saved.lat,saved.lng,saved.label||'Saved location');}catch{}
 }
 boot();
