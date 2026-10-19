@@ -39,5 +39,8 @@ test('user-facing map identifies western sites as context, not official counts',
   assert.match(parent,/not live counts/);
   assert.match(parent,/eastern migration only/);
   assert.match(parent,/California sanctuary markers are locations/);
-  assert.match(parent,/v=20261009-3/);
+  const version=parent.match(/styles\.css\?v=(\d{8}-\d+)/)?.[1];
+  assert.ok(version,'Versioned stylesheet is missing');
+  assert.ok(parent.includes('app.js?v='+version),'App cache version must match CSS');
+  assert.ok(parent.includes('field-guide.js?v='+version),'Field guide cache version must match CSS');
 });
