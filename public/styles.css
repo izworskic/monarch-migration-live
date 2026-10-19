@@ -26,3 +26,52 @@
 .official-monitoring-foot{font-size:12px;color:var(--muted);line-height:1.55}
 .western-count-reported{background:#dff0e4!important;color:#21583c!important}
 @media(max-width:720px){.western-monitoring-grid{grid-template-columns:1fr}.western-monitoring-card{padding:18px}.official-monitoring{margin-top:22px}}
+
+
+/* Interpretive field guide: calm, source-aware trip planning, not a live wildlife census. */
+.field-guide{padding-top:82px}
+.field-layout{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(290px,.85fr);gap:18px;align-items:stretch}
+.field-plan{background:var(--paper);border:1px solid var(--line);border-top:4px solid var(--orange);border-radius:13px;padding:clamp(20px,3vw,32px);box-shadow:0 9px 28px rgba(27,41,35,.07);min-width:0}
+.field-plan-head{display:flex;align-items:center;justify-content:space-between;gap:15px;flex-wrap:wrap}
+.field-verdict{display:inline-flex;align-items:center;padding:7px 11px;border-radius:100px;background:#e7e7e0;color:#354b42;font-size:10px;font-weight:850;letter-spacing:.095em}
+.field-verdict--promising{background:#dcebd8;color:#1c5936}
+.field-verdict--mixed{background:#ffedce;color:#794515}
+.field-verdict--plan{background:#e9ebe4;color:#475f50}
+.field-verdict--unknown{background:#eee6d8;color:#6a5947}
+.field-verdict--western{background:#e9e3f2;color:#55416e}
+#fieldPlanPlace{font-size:12px;color:var(--muted);font-weight:750}
+.field-plan h3{font:500 clamp(27px,3vw,38px)/1.15 Georgia,serif;letter-spacing:-.025em;margin:24px 0 12px}
+#fieldPlanSummary{font-size:15px;line-height:1.64;color:#41534b;max-width:720px;margin:0 0 25px}
+.field-evidence{border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.field-evidence-row{display:grid;grid-template-columns:minmax(120px,.38fr) minmax(0,1fr);gap:18px;align-items:start;padding:13px 0;border-bottom:1px solid #e8e4d9;font-size:12px;line-height:1.4}
+.field-evidence-row:last-child{border-bottom:0}
+.field-evidence-row span{color:#6b756f}
+.field-evidence-row strong{font-weight:720;color:#263e34;overflow-wrap:anywhere}
+.field-plan-caveat{color:var(--muted);font-size:12px;line-height:1.5;margin:15px 0}
+.field-plan-actions{display:flex;align-items:center;gap:18px;flex-wrap:wrap;margin-top:21px}
+.field-plan-actions button{border:0;background:#244e3d;color:white;padding:12px 16px;border-radius:7px;font-weight:800;cursor:pointer;font-size:12px}
+.field-plan-actions button:disabled{opacity:.45;cursor:not-allowed}
+.field-plan-actions button:not(:disabled):hover{background:#306348}
+.field-plan-actions a{font-size:12px;font-weight:820;text-underline-offset:3px;color:#245d4a}
+.field-copy-status{font-size:12px;color:#28583a;min-height:1.1em;margin:9px 0 0}
+.field-photo{position:relative;margin:0;overflow:hidden;min-height:460px;border-radius:13px;background:#172b20}
+.field-photo img{width:100%;height:100%;object-fit:cover;display:block;position:absolute;inset:0}
+.field-photo:after{content:"";position:absolute;inset:45% 0 0;background:linear-gradient(transparent,rgba(5,17,12,.92));pointer-events:none}
+.field-photo figcaption{position:absolute;left:20px;right:20px;bottom:18px;z-index:1;color:#fffaf0;font-size:11px;line-height:1.5;text-shadow:0 1px 6px rgba(0,0,0,.3)}
+.field-photo a{font-weight:800;white-space:nowrap}
+.field-interactive-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;margin-top:18px}
+.field-explorer{border-radius:12px;background:#e9e6dc;padding:clamp(20px,3vw,30px);min-width:0}
+.field-explorer h3{font:500 clamp(24px,2.4vw,31px)/1.2 Georgia,serif;margin:9px 0 19px}
+.field-tabs{display:flex;gap:6px;flex-wrap:wrap}
+.field-tabs button{flex:1;min-width:78px;padding:11px 12px;border:1px solid #c7c9be;border-radius:7px;background:#fcfaf4;color:#395044;font-weight:750;font-size:12px;cursor:pointer}
+.field-tabs button.active,.field-tabs button[aria-selected="true"],.field-tabs button[aria-pressed="true"]{background:#294c3c;color:#fff;border-color:#294c3c}
+.field-tabs button:focus-visible,.field-plan-actions a:focus-visible,.field-plan-actions button:focus-visible{outline:3px solid #de7b2a;outline-offset:3px}
+.field-season-panel{margin-top:17px;background:var(--paper);padding:21px;border-radius:8px;min-height:208px}
+.field-source-label{font-size:10px;font-weight:850;letter-spacing:.12em;color:#92541f}
+.field-season-panel h4{font:500 25px/1.2 Georgia,serif;margin:8px 0}
+.field-season-panel p{font-size:13px;line-height:1.6;color:#506057}
+.field-season-timing{border-top:1px solid var(--line);padding-top:10px;font-weight:760!important;color:#375b43!important}
+.field-site-advice{background:var(--paper);border-radius:8px;padding:22px;margin:17px 0 0;font-size:15px;line-height:1.65;min-height:155px;color:#304c3f}
+.field-note{color:#66726b;font-size:12px;line-height:1.5;margin:13px 0 0}
+@media(max-width:940px){.field-layout{grid-template-columns:1fr}.field-photo{min-height:340px}.field-interactive-grid{grid-template-columns:1fr}}
+@media(max-width:600px){.field-guide{padding-top:58px}.field-plan{padding:20px}.field-photo{min-height:300px}.field-evidence-row{grid-template-columns:1fr;gap:4px}.field-tabs button{min-width:0;flex-basis:calc(50% - 6px)}.field-site-tabs button{flex-basis:0}.field-season-panel{min-height:unset}.field-site-advice{min-height:unset}.field-plan-actions{align-items:flex-start}}

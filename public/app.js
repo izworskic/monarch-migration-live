@@ -344,6 +344,7 @@ function renderContext(d,label){
     `${label} · ${west?'Western seasonal':'Eastern migration'} readout · checked ${new Date(d.generatedAt).toLocaleTimeString([],{hour:'numeric',minute:'2-digit'})}`;
   if(d.fallback)$('#freshnessTop').textContent='Live local feeds unavailable; no migration score';
   else if(d.sourceState?.weather==='degraded'||d.sourceState?.observations==='degraded')$('#freshnessTop').textContent='Local readout has unavailable source(s)';
+  document.dispatchEvent(new CustomEvent('monarch:context',{detail:{data:d,label}}));
   if(window.gtag)gtag('event','monarch_location_readout',{method:label==='Your location'?'device':'location-page-or-zip',population:d.population,phase:m.phase,quality:m.quality||'unknown'});
 }
 
