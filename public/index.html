@@ -14,7 +14,7 @@
   <meta name="twitter:card" content="summary" />
   <link rel="preconnect" href="https://unpkg.com" crossorigin />
   <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@5.7.1/dist/maplibre-gl.css" />
-  <link rel="stylesheet" href="/national-tools/monarch-migration-live/styles.css?v=20261009-3" />
+  <link rel="stylesheet" href="/national-tools/monarch-migration-live/styles.css?v=20261019-1" />
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-Y5D2V2W7HN"></script>
   <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config','G-Y5D2V2W7HN',{anonymize_ip:true});</script>
   <script type="application/ld+json">
@@ -89,6 +89,67 @@
       <article class="metric"><span class="metric-label" id="confidenceLabel">Data coverage</span><div class="metric-value"><span id="confidenceValue">—</span><small id="confidenceUnit">%</small></div><div id="confidenceWords" class="metric-note">Source coverage + observation density</div></article>
     </div>
     <p id="decisionSentence" class="decision-sentence">Choose a location to answer the useful question: <strong>are monarchs moving through here now, and when should I watch?</strong></p>
+  </section>
+
+
+  <section id="monarchFieldGuide" class="field-guide section-pad" aria-labelledby="monarchGuideTitle">
+    <div class="section-heading">
+      <div><span class="kicker">YOUR MONARCH FIELD GUIDE</span>
+        <h2 id="monarchGuideTitle">Is this a good day to look for monarchs?</h2>
+        <p>Turn the map into a field plan. A recommendation uses the local model and verified feed coverage—never a promise that butterflies will appear.</p>
+      </div>
+    </div>
+    <div class="field-layout">
+      <article class="field-plan" aria-live="polite">
+        <div class="field-plan-head"><span id="fieldVerdictTag" class="field-verdict field-verdict--unknown">CHOOSE A LOCATION</span><span id="fieldPlanPlace">Your local watch</span></div>
+        <h3 id="fieldPlanTitle">Begin with your ZIP code or device location</h3>
+        <p id="fieldPlanSummary">Your local migration readout will become a field recommendation, with the reason behind it and the source limitations spelled out.</p>
+        <div id="fieldEvidence" class="field-evidence" aria-label="Evidence behind the field recommendation">
+          <div class="field-evidence-row"><span>Historical timing</span><strong>Choose a location</strong></div>
+          <div class="field-evidence-row"><span>Reported sightings</span><strong>Not yet loaded</strong></div>
+          <div class="field-evidence-row"><span>NWS conditions</span><strong>Not yet loaded</strong></div>
+        </div>
+        <p id="fieldPlanCaveat" class="field-plan-caveat">Observed records, modeled timing and current weather are different kinds of evidence.</p>
+        <div class="field-plan-actions">
+          <button id="fieldCopy" type="button" disabled>Copy field note</button>
+          <a href="#map">Explore the sightings map →</a>
+        </div>
+        <p id="fieldCopyStatus" class="field-copy-status" role="status" aria-live="polite"></p>
+      </article>
+      <figure class="field-photo">
+        <img loading="lazy" decoding="async" width="1745" height="1310" src="https://upload.wikimedia.org/wikipedia/commons/b/b8/Monarch_butterfly_on_goldenrod_plant_flower.jpg" alt="Real photograph of a monarch butterfly feeding on bright yellow goldenrod flowers" />
+        <figcaption>Monarch nectaring on goldenrod. U.S. Fish &amp; Wildlife Service photograph, public domain. <a href="https://commons.wikimedia.org/wiki/File:Monarch_butterfly_on_goldenrod_plant_flower.jpg" target="_blank" rel="noopener">Image and rights ↗</a></figcaption>
+      </figure>
+    </div>
+    <div class="field-interactive-grid">
+      <section class="field-explorer" aria-labelledby="fieldJourneyTitle">
+        <span class="kicker">EXPLORE THE YEAR</span>
+        <h3 id="fieldJourneyTitle">Follow the migration, season by season</h3>
+        <div class="field-tabs" role="tablist" aria-label="Monarch annual cycle">
+          <button type="button" role="tab" aria-controls="fieldSeasonPanel" id="fieldTabSpring" data-monarch-season="spring" aria-selected="false" tabindex="-1">Spring</button>
+          <button type="button" role="tab" aria-controls="fieldSeasonPanel" id="fieldTabSummer" data-monarch-season="summer" aria-selected="false" tabindex="-1">Summer</button>
+          <button type="button" role="tab" aria-controls="fieldSeasonPanel" id="fieldTabFall" data-monarch-season="fall" aria-selected="true">Fall</button>
+          <button type="button" role="tab" aria-controls="fieldSeasonPanel" id="fieldTabWinter" data-monarch-season="winter" aria-selected="false" tabindex="-1">Winter</button>
+        </div>
+        <div id="fieldSeasonPanel" class="field-season-panel" role="tabpanel" aria-labelledby="fieldJourneyTitle" tabindex="0">
+          <span id="fieldSeasonType" class="field-source-label">EASTERN SEASONAL CONTEXT</span>
+          <h4 id="fieldSeasonTitle">The long southbound flight</h4>
+          <p id="fieldSeasonStory">Learn how the route, timing and habitat change through the year.</p>
+          <p id="fieldSeasonTiming" class="field-season-timing">Choose a location for local historical timing.</p>
+        </div>
+      </section>
+      <section class="field-explorer field-where" aria-labelledby="fieldWhereTitle">
+        <span class="kicker">WHAT TO LOOK FOR</span>
+        <h3 id="fieldWhereTitle">Choose your kind of monarch watch</h3>
+        <div class="field-tabs field-site-tabs" role="group" aria-label="Habitat to explore">
+          <button type="button" data-monarch-site="shoreline" class="active" aria-pressed="true">Shoreline</button>
+          <button type="button" data-monarch-site="meadow" aria-pressed="false">Meadow</button>
+          <button type="button" data-monarch-site="garden" aria-pressed="false">Garden</button>
+        </div>
+        <p id="fieldSiteAdvice" class="field-site-advice">Watch protected edges, sunny openings and points of land for monarchs on the move.</p>
+        <p class="field-note">These are fieldcraft suggestions, not verified active roost locations or promises of sightings.</p>
+      </section>
+    </div>
   </section>
 
   <section class="map-section">
@@ -202,5 +263,6 @@
 <footer><strong>Monarch Migration Live</strong><span>Decision intelligence, not a wildlife census.</span><a href="https://chrisizworski.com/national-tools/">More National Outdoor Tools</a></footer>
 
 <script src="https://unpkg.com/maplibre-gl@5.7.1/dist/maplibre-gl.js"></script>
-<script type="module" src="/national-tools/monarch-migration-live/app.js?v=20261009-3"></script>
+<script type="module" src="/national-tools/monarch-migration-live/field-guide.js?v=20261019-1"></script>
+<script type="module" src="/national-tools/monarch-migration-live/app.js?v=20261019-1"></script>
 </body></html>
