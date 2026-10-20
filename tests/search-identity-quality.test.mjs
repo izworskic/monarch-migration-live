@@ -28,5 +28,5 @@ test('canonical creator Person ID is connected to the app and visibly attributed
 test('identity cleanup does not touch the ad loader or core tool UX',()=>{
  for(const id of ['monarchFieldGuide','map','geoButton','zipForm'])assert.ok(html.includes('id="'+id+'"'),id+' lost');
  assert.match(html,/class="monarch-fieldbook"/);
- assert.match(html,/https:\/\/chrisizworski\.com\/national-tools\/monarch-migration-live\/app\.js/);
+ assert.match(html,/src="\/national-tools\/monarch-migration-live\/app\.js\?v=/);
 });
