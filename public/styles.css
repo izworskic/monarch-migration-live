@@ -75,3 +75,65 @@
 .field-note{color:#66726b;font-size:12px;line-height:1.5;margin:13px 0 0}
 @media(max-width:940px){.field-layout{grid-template-columns:1fr}.field-photo{min-height:340px}.field-interactive-grid{grid-template-columns:1fr}}
 @media(max-width:600px){.field-guide{padding-top:58px}.field-plan{padding:20px}.field-photo{min-height:300px}.field-evidence-row{grid-template-columns:1fr;gap:4px}.field-tabs button{min-width:0;flex-basis:calc(50% - 6px)}.field-site-tabs button{flex-basis:0}.field-season-panel{min-height:unset}.field-site-advice{min-height:unset}.field-plan-actions{align-items:flex-start}}
+
+
+/* Pictured Rocks-inspired reading flow: one continuous visitor guide,
+   three cohesive chapters, and fewer blank page-level breaks. This is
+   document layout only, not advertising placement or configuration. */
+.monarch-fieldbook{
+  max-width:1260px;
+  margin:26px auto 0;
+  padding:0 clamp(0px,1.6vw,20px);
+  background:var(--paper);
+  border:1px solid var(--line);
+  border-radius:16px;
+  box-shadow:0 12px 34px rgba(16,28,23,.07);
+  overflow:hidden;
+}
+.monarch-fieldbook>.fieldbook-chapter{
+  padding:6px 0 12px;
+  min-width:0;
+}
+.monarch-fieldbook>.fieldbook-chapter+.fieldbook-chapter{
+  border-top:1px solid var(--line);
+}
+.monarch-fieldbook .fieldbook-chapter>.section-pad,
+.monarch-fieldbook .fieldbook-chapter>.map-section{
+  margin:0;
+  max-width:none;
+  padding:27px clamp(18px,3vw,34px) 22px;
+}
+.monarch-fieldbook .fieldbook-chapter>.field-guide{padding-top:30px}
+.monarch-fieldbook .fieldbook-chapter>.map-section{padding-top:16px}
+.monarch-fieldbook .fieldbook-chapter>.story-grid{padding-top:28px}
+.monarch-fieldbook .fieldbook-chapter>.education{padding-top:21px}
+.monarch-fieldbook .fieldbook-chapter>.history-section{padding-top:28px}
+.monarch-fieldbook .fieldbook-chapter>.history-local,
+.monarch-fieldbook .fieldbook-chapter>.explain-section,
+.monarch-fieldbook .fieldbook-chapter>.sources{padding-top:20px}
+.monarch-fieldbook .section-heading{margin-bottom:18px}
+.monarch-fieldbook .story-card{
+  box-shadow:none;
+  border:1px solid var(--line);
+}
+.monarch-fieldbook .lake-card{border-color:#18342e}
+.monarch-fieldbook .education-grid article{min-height:0}
+.monarch-fieldbook .history-chart{min-height:180px}
+.monarch-fieldbook+.section-pad{padding-top:36px}
+@media(max-width:680px){
+  .monarch-fieldbook{
+    margin:14px 10px 0;
+    border-radius:12px;
+    padding:0;
+  }
+  .monarch-fieldbook>.fieldbook-chapter{padding:0 0 8px}
+  .monarch-fieldbook .fieldbook-chapter>.section-pad,
+  .monarch-fieldbook .fieldbook-chapter>.map-section{
+    padding:20px 14px 17px;
+  }
+  .monarch-fieldbook .fieldbook-chapter>.map-section{padding-top:10px}
+  .monarch-fieldbook .fieldbook-chapter>.education,
+  .monarch-fieldbook .fieldbook-chapter>.history-local,
+  .monarch-fieldbook .fieldbook-chapter>.explain-section,
+  .monarch-fieldbook .fieldbook-chapter>.sources{padding-top:15px}
+}
