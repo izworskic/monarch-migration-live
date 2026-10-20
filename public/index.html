@@ -14,7 +14,7 @@
   <meta name="twitter:card" content="summary" />
   <link rel="preconnect" href="https://unpkg.com" crossorigin />
   <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@5.7.1/dist/maplibre-gl.css" />
-  <link rel="stylesheet" href="/national-tools/monarch-migration-live/styles.css?v=20261019-1" />
+  <link rel="stylesheet" href="/national-tools/monarch-migration-live/styles.css?v=20261020-1" />
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-Y5D2V2W7HN"></script>
   <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config','G-Y5D2V2W7HN',{anonymize_ip:true});</script>
   <script type="application/ld+json">
@@ -92,7 +92,9 @@
   </section>
 
 
-  <section id="monarchFieldGuide" class="field-guide section-pad" aria-labelledby="monarchGuideTitle">
+  <article class="monarch-fieldbook" aria-label="Monarch migration field guide and evidence">
+    <div class="fieldbook-chapter fieldbook-watch">
+      <div id="monarchFieldGuide" class="field-guide section-pad" aria-labelledby="monarchGuideTitle">
     <div class="section-heading">
       <div><span class="kicker">YOUR MONARCH FIELD GUIDE</span>
         <h2 id="monarchGuideTitle">Is this a good day to look for monarchs?</h2>
@@ -150,9 +152,9 @@
         <p class="field-note">These are fieldcraft suggestions, not verified active roost locations or promises of sightings.</p>
       </section>
     </div>
-  </section>
+  </div>
 
-  <section class="map-section">
+  <div class="map-section">
     <div class="section-heading">
       <div><span class="kicker">OBSERVED + MODELED</span><h2>The migration map</h2><p>Orange dots are sampled observations, not butterfly counts. The orange seasonal band models eastern migration only; purple points mark western overwintering locations, not confirmed arrivals.</p></div>
       <div class="map-controls" role="group" aria-label="Map layers">
@@ -194,9 +196,11 @@
       </div>
       <p class="official-monitoring-foot" id="westernMonitoringStatus">Checking the Pacific Grove Museum for a newer dated sanctuary report. Latest Xerces site surveys are shown separately.</p>
     </section>
-  </section>
+  </div>
 
-  <section class="story-grid section-pad">
+    </div>
+    <div class="fieldbook-chapter fieldbook-story">
+      <div class="story-grid section-pad">
     <article class="story-card habitat-card">
       <span class="kicker">HELP THE NEXT WAVE</span><h2>What should I plant — and when?</h2>
       <p id="habitatAction">Choose your location and the tool will change the guidance with the migration season.</p>
@@ -213,9 +217,9 @@
       <div class="lake-stat"><strong>500+</strong><span>monarchs have been documented in individual Great Lakes roost observations.</span></div>
       <p class="fine">The Great Lakes layer marks known context areas; it does not claim every point is an active roost today.</p>
     </article>
-  </section>
+  </div>
 
-  <section class="education section-pad">
+  <div class="education section-pad">
     <div class="section-heading"><div><span class="kicker">MIGRATION IN 60 SECONDS</span><h2>The trip is stranger than it looks</h2><p>The orange dots are only the visible surface of a remarkable annual cycle.</p></div></div>
     <div class="education-grid">
       <article><span>01</span><h3>Northbound takes generations</h3><p>Spring recolonization is a relay. The butterflies reaching the northern breeding range are descendants of the monarchs that left Mexico.</p></article>
@@ -223,22 +227,24 @@
       <article><span>03</span><h3>The wave has a clock</h3><p>Latitude and the seasonal sun create a repeatable timing pattern, while fronts, wind and temperature can speed up, stall or concentrate the flight.</p></article>
       <article><span>04</span><h3>There are two major migrations</h3><p>Eastern monarchs generally winter in Mexico. Western monarchs primarily use coastal California and northern Baja, with some mixing between populations.</p></article>
     </div>
-  </section>
+  </div>
 
-  <section class="history-section section-pad">
+    </div>
+    <div class="fieldbook-chapter fieldbook-evidence">
+      <div class="history-section section-pad">
     <div class="section-heading"><div><span class="kicker">LONG VIEW</span><h2>Population trend ≠ today’s migration</h2><p>Annual overwintering surveys tell us how the populations are doing. They should not be confused with the live map.</p></div></div>
     <div class="population-cards">
       <article class="population-card east"><span class="population-tag">EASTERN</span><div class="population-number">2.93 <small>ha</small></div><h3>Winter 2025–26 in Mexico</h3><p>Area occupied by clustered eastern monarchs. Up from 1.79 ha the prior winter.</p><div id="eastBars" class="mini-bars" aria-label="Recent eastern overwintering trend"></div></article>
       <article class="population-card west"><span class="population-tag">WESTERN</span><div class="population-number">12,260</div><h3>2025 mid-season count</h3><p>Monarchs counted across 249 western overwintering sites — still near historic lows.</p><div class="survey-dates"><strong>2026 surveys</strong><span>Early: Oct 17–Nov 1</span><span>Mid: Nov 14–Dec 6</span><span>Late: Dec 26–Jan 10</span></div></article>
     </div>
-  </section>
+  </div>
 
-  <section class="history-local section-pad">
+  <div class="history-local section-pad">
     <div class="section-heading"><div><span class="kicker">YOUR AREA OVER TIME</span><h2>Historical observation footprint</h2><p>This is an observation index, not abundance. More observers and better platforms can create more records.</p></div></div>
     <div id="historyChart" class="history-chart"><div class="empty-chart">Choose a location to load commercially reusable GBIF occurrence history.</div></div>
-  </section>
+  </div>
 
-  <section class="explain-section section-pad">
+  <div class="explain-section section-pad">
     <div class="section-heading"><div><span class="kicker">HOW THE ENGINE THINKS</span><h2>One score, four ingredients</h2><p>The score is deterministic and inspectable. If a source fails, the confidence falls instead of inventing precision.</p></div></div>
     <div class="explain-grid">
       <article><b>40%</b><h3>Recent observations</h3><p>Licensed community-science records near the selected location and whether reporting is rising or falling.</p></article>
@@ -246,9 +252,9 @@
       <article><b>25%</b><h3>Flight weather</h3><p>Temperature, precipitation and fall southbound tailwind from the National Weather Service.</p></article>
       <article><b>5%</b><h3>Freshness</h3><p>Stale or failed sources reduce the model instead of being silently treated as current.</p></article>
     </div>
-  </section>
+  </div>
 
-  <section class="sources section-pad">
+  <div class="sources section-pad">
     <div class="section-heading"><div><span class="kicker">PROVENANCE FIRST</span><h2>What is live, what is historical, what is linked</h2></div></div>
     <div class="source-table">
       <div class="source-row"><span class="source-kind observed">OBSERVED</span><strong>iNaturalist</strong><span>Recent monarch occurrence records</span><span>CC0 / CC BY records only</span></div>
@@ -258,11 +264,13 @@
       <div class="source-row"><span class="source-kind linked">LINKED</span><strong>Journey North</strong><span>Exceptional first-sighting / roost community science</span><span>Linked, not republished on this commercial site</span></div>
     </div>
     <div class="source-links"><a href="https://monarchwatch.org/tagging/" target="_blank" rel="noopener">Monarch Watch ↗</a><a href="https://journeynorth.org/monarchs" target="_blank" rel="noopener">Journey North ↗</a><a href="https://www.fws.gov/species/monarch-danaus-plexippus" target="_blank" rel="noopener">U.S. Fish & Wildlife Service ↗</a><a href="https://westernmonarchcount.org/" target="_blank" rel="noopener">Western Monarch Count ↗</a></div>
-  </section>
+  </div>
+    </div>
+  </article>
 </main>
 <footer><strong>Monarch Migration Live</strong><span>Decision intelligence, not a wildlife census.</span><a href="https://chrisizworski.com/national-tools/">More National Outdoor Tools</a></footer>
 
 <script src="https://unpkg.com/maplibre-gl@5.7.1/dist/maplibre-gl.js"></script>
-<script type="module" src="/national-tools/monarch-migration-live/field-guide.js?v=20261019-1"></script>
-<script type="module" src="/national-tools/monarch-migration-live/app.js?v=20261019-1"></script>
+<script type="module" src="/national-tools/monarch-migration-live/field-guide.js?v=20261020-1"></script>
+<script type="module" src="/national-tools/monarch-migration-live/app.js?v=20261020-1"></script>
 </body></html>
